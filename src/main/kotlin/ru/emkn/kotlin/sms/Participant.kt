@@ -1,5 +1,7 @@
 package ru.emkn.kotlin.sms
 
+import java.time.LocalTime
+
 class Participant(
 	val firstName: String,
 	val SecondName: String,
@@ -10,7 +12,7 @@ class Participant(
 ) {
 
 	val number = numberForParticipant
-	val time: Int? = null
+	var startTime: LocalTime = LocalTime.of(12, 0, 0)
 
 	companion object {
 		var numberForParticipant = 0
