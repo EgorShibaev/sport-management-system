@@ -26,9 +26,11 @@ fun parseApplies(applicationsContent: List<String>) =
 	}.groupBy { it.group }
 
 fun defineTimeForGroup(group: List<Participant>): List<Participant> {
-	val offset = 1L
+	var offset = 0L
+	val step = 5
 	return group.map {
 		it.startTime = it.startTime.plusMinutes(offset)
+		offset += step
 		it
 	}
 }
@@ -38,7 +40,7 @@ fun generateStartProtocol(groups: List<List<Participant>>): List<List<List<Strin
 		listOf(
 			participant.number.toString(),
 			participant.firstName,
-			participant.SecondName,
+			participant.secondName,
 			participant.year.toString(),
 			participant.rank.russianEquivalent,
 			participant.startTime.toString(),
