@@ -6,5 +6,5 @@ interface Runnable {
 
 	val startTime: LocalTime
 
-	val passingPoints: List<Pair<Int, LocalTime>>
+	val passedPoints: List<Pair<Int, LocalTime>>
 }

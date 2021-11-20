@@ -13,7 +13,7 @@ class Participant(
 
 	var number = numberForParticipant
 	override var startTime: LocalTime = LocalTime.of(12, 0, 0)
-	override var passingPoints: List<Pair<Int, LocalTime>> = emptyList()
+	override var passedPoints: List<Pair<Int, LocalTime>> = emptyList()
 
 	companion object {
 		var numberForParticipant = 0

@@ -61,7 +61,7 @@ fun writeStartProtocol(inputFileNames: List<String>) {
 	val content = generateStartProtocol(getGroups(inputFileNames).map { defineTimeForGroup(it.value) })
 	var currentFileNumber = 1
 	content.forEach {
-		val outputFileName = "start-protocols/start-protocol$currentFileNumber"
+		val outputFileName = "start-protocols/start-protocol$currentFileNumber.csv"
 		File("start-protocols").mkdir()
 		File(outputFileName).createNewFile()
 		csvWriter().writeAll(it, outputFileName)
