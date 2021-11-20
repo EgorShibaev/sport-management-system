@@ -111,8 +111,8 @@ fun timeDistance(time1: LocalTime, time2: LocalTime): LocalTime =
 
 
 fun <T : Runnable> getRankedList(list: List<T>): List<T> {
-	assert(list.windowed(2, 1, false).all { pair ->
+	require(list.windowed(2, 1, false).all { pair ->
 		pair[0].passingPoints.map { it.first } == pair[1].passingPoints.map { it.first }
-	})
+	}) { "Each group should have the same points" }
 	return list.sortedBy { timeDistance(it.passingPoints.last().second, it.startTime) }
 }
