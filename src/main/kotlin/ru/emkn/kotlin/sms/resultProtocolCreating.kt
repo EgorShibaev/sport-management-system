@@ -105,8 +105,18 @@ fun readResultFromFile(fileName: String, participants: List<Participant>): List<
 	return processed
 }
 
+fun groupPointsCheck(participants: List<Participant>) {
+	val name = participants[0].group
+	val expectedPoints = csvReader().readAll(File("sample-data/courses.csv")).find { it[0] == name } ?:
+		throw IllegalArgumentException("courses.csv isn't complete")
+	assert(participants.all {
+		it.passedPoints.map { it.first } == expectedPoints
+	})
+}
+
 fun createResultProtocol(participants: List<Participant>) {
 	val groups = participants.groupBy { it.group }.map { Pair(it.key, getRankedList(it.value)) }
+	groups.forEach { groupPointsCheck(it.second) }
 	val dirName = "result"
 	val fileName = "result.csv"
 	File(dirName).mkdir()
@@ -120,16 +130,19 @@ fun createResultProtocol(participants: List<Participant>) {
 			writeRow(listOf(group.first) + List(fieldCount - 1) { "" })
 			writeRow(heading)
 			var currentPlace = 1
-			val winnerTime = group.second.first().passedPoints.lastOrNull()?.second
+			val winnerTime = if (group.second.first().passedPoints.isEmpty())
+				null
+			else
+				timeDistance(group.second.first().passedPoints.last().second, group.second.first().startTime)
 			group.second.forEach {
 				val result = if (it.passedPoints.isEmpty())
+					null
+				else
+					timeDistance(it.passedPoints.last().second, it.startTime)
+				val diff = if (it.passedPoints.isEmpty() || winnerTime == null || result == null)
 					"снят"
 				else
-					timeDistance(it.passedPoints.last().second, it.startTime).toString()
-				val diff = if (it.passedPoints.isEmpty() || winnerTime == null)
-					"снят"
-				else
-					"+${timeDistance(it.passedPoints.last().second, winnerTime)}"
+					"+${timeDistance(result, winnerTime)}"
 				writeRow(
 					listOf(
 						currentPlace.toString(),
@@ -139,7 +152,7 @@ fun createResultProtocol(participants: List<Participant>) {
 						it.year.toString(),
 						it.rank.russianEquivalent,
 						it.group,
-						result,
+						result?.toString() ?: "снят",
 						currentPlace.toString(),
 						diff
 					)

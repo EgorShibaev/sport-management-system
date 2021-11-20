@@ -3,8 +3,10 @@ package ru.emkn.kotlin.sms
 import com.github.doyaaaaaken.kotlincsv.dsl.csvReader
 import com.github.doyaaaaaken.kotlincsv.dsl.csvWriter
 import java.io.File
+import kotlin.random.Random
 
 fun main(args: Array<String>) {
+
 //	val inputFileNames = listOf(
 //		"sample-data/applications/application1.csv",
 //		"sample-data/applications/application2.csv",
@@ -47,4 +49,5 @@ fun main(args: Array<String>) {
 	)
 	val resName = "sample-data/splits.csv"
 	createResultProtocol(readResultFromFile(resName, getParticipantsList(fileNames)))
+
 }
