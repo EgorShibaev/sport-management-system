@@ -47,23 +47,15 @@ fun readResultFromFile(fileName: String, participants: List<Participant>): List<
 	processResult(ReadFromFile(fileName), participants)
 
 fun processResult(readable: InfoReadable, participants: List<Participant>): List<Participant> {
-	val notProcessed = participants.toMutableList()
-	val processed = mutableListOf<Participant>()
 	readable.getContent().forEach { (number, passedPoints) ->
-		val participant = notProcessed.firstOrNull { it.number == number }
+		val participant = participants.firstOrNull { it.number == number }
 			?: throw IllegalArgumentException("Participant with this number does not exists or has been processed")
-		assert(notProcessed.remove(participant))
-		if (passedPoints.map { it.second }.sorted() != passedPoints.map { it.second })
-			participant.passedPoints = emptyList()
-		else
+		if (passedPoints.map { it.second }.sorted() == passedPoints.map { it.second }) {
 			participant.passedPoints = passedPoints
-		processed.add(participant)
+			participant.resultTime = timeDistance(passedPoints.last().second, participant.startTime)
+		}
 	}
-	notProcessed.forEach {
-		it.passedPoints = emptyList()
-		processed.add(it)
-	}
-	return processed
+	return participants
 }
 
 fun groupPointsCheck(participants: List<Participant>) {
@@ -91,19 +83,13 @@ fun createResultProtocol(participants: List<Participant>) {
 			writeRow(listOf(group.first) + List(fieldCount - 1) { "" })
 			writeRow(heading)
 			var currentPlace = 1
-			val winnerTime = if (group.second.first().passedPoints.isEmpty())
-				null
-			else
-				timeDistance(group.second.first().passedPoints.last().second, group.second.first().startTime)
+			val winnerTime = group.second.first().resultTime
 			group.second.forEach {
-				val result = if (it.passedPoints.isEmpty())
-					null
-				else
-					timeDistance(it.passedPoints.last().second, it.startTime)
-				val diff = if (it.passedPoints.isEmpty() || winnerTime == null || result == null)
-					"снят"
-				else
-					"+${timeDistance(result, winnerTime)}"
+				val result = it.resultTime
+				val diff = when {
+					winnerTime == null || result == null ->	"снят"
+					else -> "+${timeDistance(result, winnerTime)}"
+				}
 				writeRow(
 					listOf(
 						currentPlace.toString(),
@@ -113,7 +99,7 @@ fun createResultProtocol(participants: List<Participant>) {
 						it.year.toString(),
 						it.rank.russianEquivalent,
 						it.organization,
-						result?.toString() ?: "снят",
+						it.resultTime?.toString() ?: "снят",
 						currentPlace.toString(),
 						diff
 					)

@@ -32,6 +32,7 @@ class TestInteractiveResultRead {
 		val result = interactiveResultRead(listOf(part1))
 		assertEquals(result, listOf(part1))
 		assert(result[0].passedPoints == listOf<Pair<Int, LocalTime>>())
+		assert(result[0].resultTime == null)
 	}
 
 	@Test

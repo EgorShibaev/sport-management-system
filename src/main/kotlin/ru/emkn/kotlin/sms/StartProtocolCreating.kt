@@ -7,11 +7,11 @@ import java.io.File
 fun getGroups(fileNames: List<String>) = parseApplies(fileNames.map { File(it).readText() })
 
 fun parseApplies(applicationsContent: List<String>) =
-	applicationsContent.fold(listOf<Participant>()) { acc, content ->
+	applicationsContent.map { content ->
 		val rows = csvReader().readAll(content)
 		require(rows.all { it.size == 5 } && rows.size > 2) { "incorrect format" }
 		val organization = rows[0][0]
-		val participant = rows.subList(2, rows.lastIndex + 1).map { args ->
+		val participants = rows.subList(2, rows.lastIndex + 1).map { args ->
 			Participant(
 				args[1],
 				args[2],
@@ -22,8 +22,8 @@ fun parseApplies(applicationsContent: List<String>) =
 				organization
 			)
 		}
-		participant + acc
-	}.groupBy { it.group }
+		participants
+	}.flatten().groupBy { it.group }
 
 fun defineTimeForGroup(group: List<Participant>): List<Participant> {
 	var offset = 0L
@@ -47,8 +47,6 @@ fun generateStartProtocol(groups: List<List<Participant>>): List<List<List<Strin
 			participant.organization,
 		)
 
-	// make sure that participant in each group have same groups
-	assert(groups.all { group -> group.windowed(2, 1, false).all { it[0].group == it[1].group } })
 	val fieldCount = 7
 	return groups.map { group ->
 		val groupName = group.first().group
