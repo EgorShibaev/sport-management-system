@@ -40,62 +40,23 @@ fun getParticipantsList(fileNames: List<String>) =
 		}
 	}.flatten()
 
-fun interactiveResultRead(participants: List<Participant>): List<Participant> {
-	val notProcessed = participants.toMutableList()
-	val processed = mutableListOf<Participant>()
-	while (true) {
-		println("Input number of participant:")
-		val number = readLine()?.toIntOrNull() ?: break
-		val participant = notProcessed.firstOrNull { it.number == number }
-			?: throw IllegalArgumentException("Participant with this number does not exists")
-		assert(notProcessed.remove(participant))
-		println("Input points count:")
-		val count = readLine()?.toInt() ?: throw IllegalArgumentException()
-		require(count > 0) { "There should be at least one point" }
-		val passedPoints = mutableListOf<Pair<Int, LocalTime>>()
-		repeat(count) {
-			println("Input point number:")
-			val pointNumber = readLine()?.toInt() ?: throw IllegalArgumentException()
-			println("Input time of passing:")
-			val time = parseTime(readLine() ?: throw IllegalArgumentException())
-			passedPoints.add(Pair(pointNumber, time))
-		}
-		require(passedPoints.map { it.second }.sorted() == passedPoints.map { it.second })
-		{ "jumble in time isn't allowed" }
-		participant.passedPoints = passedPoints
-		processed.add(participant)
-	}
-	notProcessed.forEach {
-		it.passedPoints = emptyList()
-		processed.add(it)
-	}
-	return processed
-}
+fun interactiveResultRead(participants: List<Participant>): List<Participant> =
+	processResult(InteractiveRead, participants)
 
-fun readResultFromFile(fileName: String, participants: List<Participant>): List<Participant> {
+fun readResultFromFile(fileName: String, participants: List<Participant>): List<Participant> =
+	processResult(ReadFromFile(fileName), participants)
+
+fun processResult(readable: InfoReadable, participants: List<Participant>): List<Participant> {
 	val notProcessed = participants.toMutableList()
 	val processed = mutableListOf<Participant>()
-	csvReader().readAll(File(fileName)).map { row ->
-		val number = row[0].toInt()
+	readable.getContent().forEach { (number, passedPoints) ->
 		val participant = notProcessed.firstOrNull { it.number == number }
-			?: throw IllegalArgumentException("Participant with this number does not exists")
+			?: throw IllegalArgumentException("Participant with this number does not exists or has been processed")
 		assert(notProcessed.remove(participant))
-		require(row.size % 2 == 1) { "incorrect result format" }
-		val passedPoints = mutableListOf<Pair<Int, LocalTime>>()
-		var isDropped = false
-		row.subList(1, row.lastIndex + 1).chunked(2).filter { it[0] != "" }.forEach {
-			if (it[0].toIntOrNull() == null)
-				isDropped = true
-			else {
-				val pointNumber = it[0].toInt()
-				val time = parseTime(it[1])
-				passedPoints.add(Pair(pointNumber, time))
-			}
-		}
-		if (passedPoints.map { it.second }.sorted() != passedPoints.map { it.second }) {
-			isDropped = true
-		}
-		participant.passedPoints = if (isDropped) emptyList() else passedPoints
+		if (passedPoints.map { it.second }.sorted() != passedPoints.map { it.second })
+			participant.passedPoints = emptyList()
+		else
+			participant.passedPoints = passedPoints
 		processed.add(participant)
 	}
 	notProcessed.forEach {
@@ -107,10 +68,10 @@ fun readResultFromFile(fileName: String, participants: List<Participant>): List<
 
 fun groupPointsCheck(participants: List<Participant>) {
 	val name = participants[0].group
-	val expectedPoints = csvReader().readAll(File("sample-data/courses.csv")).find { it[0] == name } ?:
-		throw IllegalArgumentException("courses.csv isn't complete")
-	assert(participants.all {
-		it.passedPoints.map { it.first } == expectedPoints
+	val expectedPoints = csvReader().readAll(File("sample-data/courses.csv")).find { it[0] == name }
+		?: throw IllegalArgumentException("courses.csv isn't complete")
+	assert(participants.all { participant ->
+		participant.passedPoints.map { it.first } == expectedPoints
 	})
 }
 
@@ -151,7 +112,7 @@ fun createResultProtocol(participants: List<Participant>) {
 						it.secondName,
 						it.year.toString(),
 						it.rank.russianEquivalent,
-						it.group,
+						it.organization,
 						result?.toString() ?: "снят",
 						currentPlace.toString(),
 						diff
@@ -164,15 +125,10 @@ fun createResultProtocol(participants: List<Participant>) {
 }
 
 fun timeDistance(time1: LocalTime, time2: LocalTime): LocalTime =
-	time1.minusMinutes(time2.minute.toLong()).minusHours(time2.hour.toLong()).minusSeconds(time2.second.toLong())
+	time1.minusHours(time2.hour.toLong()).minusMinutes(time2.minute.toLong()).minusSeconds(time2.second.toLong())
 
 
-fun <T : Runnable> getRankedList(list: List<T>): List<T> {
-	require(list.windowed(2, 1, false).all { pair ->
-		pair[0].passedPoints.map { it.first } == pair[1].passedPoints.map { it.first } ||
-				pair[0].passedPoints.isEmpty() || pair[1].passedPoints.isEmpty()
-	}) { "Each group should have the same points" }
-	return list.filter { it.passedPoints.isNotEmpty() }.sortedBy {
+fun <T : Runnable> getRankedList(list: List<T>): List<T> =
+	list.filter { it.passedPoints.isNotEmpty() }.sortedBy {
 		timeDistance(it.passedPoints.last().second, it.startTime)
 	} + list.filter { it.passedPoints.isEmpty() }
-}

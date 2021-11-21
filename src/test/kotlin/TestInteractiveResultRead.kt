@@ -19,7 +19,7 @@ class TestInteractiveResultRead {
 
 	@Test
 	fun testOneParticipant() {
-		setInput("1\n1\n2134\n12:00:01\n")
+		setInput("1\n1\n2134\n12:00:01\nend")
 		val res = interactiveResultRead(listOf(part1))
 		assert(res.size == 1)
 		assertEquals(res[0], part1)
@@ -28,8 +28,10 @@ class TestInteractiveResultRead {
 
 	@Test
 	fun testTimeDecreasing() {
-		setInput("1\n2\n1\n12:02\n2\n12:01")
-		assertFailsWith<IllegalArgumentException> { interactiveResultRead(listOf(part1)) }
+		setInput("1\n2\n1\n12:02\n2\n12:01\nend")
+		val result = interactiveResultRead(listOf(part1))
+		assertEquals(result, listOf(part1))
+		assert(result[0].passedPoints == listOf<Pair<Int, LocalTime>>())
 	}
 
 	@Test
@@ -54,6 +56,7 @@ class TestInteractiveResultRead {
 			12:02
 			2
 			12:05
+			end
 		""".trimIndent()
 		)
 		val res = interactiveResultRead(listOf(part1, part2, part3))
