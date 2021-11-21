@@ -26,28 +26,28 @@ fun main(args: Array<String>) {
 //		"sample-data/applications/application16.csv",
 //	)
 //	writeStartProtocol(inputFileNames)
-	val fileNames = listOf(
-		"start-protocols/start-protocol1.csv",
-		"start-protocols/start-protocol2.csv",
-		"start-protocols/start-protocol3.csv",
-		"start-protocols/start-protocol4.csv",
-		"start-protocols/start-protocol5.csv",
-		"start-protocols/start-protocol6.csv",
-		"start-protocols/start-protocol7.csv",
-		"start-protocols/start-protocol8.csv",
-		"start-protocols/start-protocol9.csv",
-		"start-protocols/start-protocol10.csv",
-		"start-protocols/start-protocol11.csv",
-		"start-protocols/start-protocol12.csv",
-		"start-protocols/start-protocol13.csv",
-		"start-protocols/start-protocol14.csv",
-		"start-protocols/start-protocol15.csv",
-		"start-protocols/start-protocol16.csv",
-		"start-protocols/start-protocol17.csv",
-		"start-protocols/start-protocol18.csv",
-		"start-protocols/start-protocol19.csv",
-	)
-	val resName = "sample-data/splits.csv"
-	createResultProtocol(readResultFromFile(resName, getParticipantsList(fileNames)))
-
+//	val fileNames = listOf(
+//		"start-protocols/start-protocol1.csv",
+//		"start-protocols/start-protocol2.csv",
+//		"start-protocols/start-protocol3.csv",
+//		"start-protocols/start-protocol4.csv",
+//		"start-protocols/start-protocol5.csv",
+//		"start-protocols/start-protocol6.csv",
+//		"start-protocols/start-protocol7.csv",
+//		"start-protocols/start-protocol8.csv",
+//		"start-protocols/start-protocol9.csv",
+//		"start-protocols/start-protocol10.csv",
+//		"start-protocols/start-protocol11.csv",
+//		"start-protocols/start-protocol12.csv",
+//		"start-protocols/start-protocol13.csv",
+//		"start-protocols/start-protocol14.csv",
+//		"start-protocols/start-protocol15.csv",
+//		"start-protocols/start-protocol16.csv",
+//		"start-protocols/start-protocol17.csv",
+//		"start-protocols/start-protocol18.csv",
+//		"start-protocols/start-protocol19.csv",
+//	)
+//	val resName = "sample-data/splits.csv"
+//	createResultProtocol(readResultFromFile(resName, getParticipantsList(fileNames)))
+	createOrganizationsResultProtocol(parseResultFile("result/result.csv"))
 }

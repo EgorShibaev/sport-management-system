@@ -1,6 +1,7 @@
 package ru.emkn.kotlin.sms
 
 import java.time.LocalTime
+import kotlin.properties.Delegates
 
 class Participant(
 	val firstName: String,
@@ -15,6 +16,7 @@ class Participant(
 	override var startTime: LocalTime = LocalTime.of(12, 0, 0)
 	override var passedPoints: List<Pair<Int, LocalTime>> = emptyList()
 	var resultTime: LocalTime? = null
+	var score: Int? = null
 
 	companion object {
 		var numberForParticipant = 0
@@ -36,6 +38,20 @@ class Participant(
 	) : this(firstName, secondName, year, rank, group, organization) {
 		startTime = inputStartTime
 		number = inputNumber
+	}
+
+	constructor(
+		inputNumber: Int,
+		firstName: String,
+		secondName: String,
+		year: Int,
+		rank: SportRank,
+		organization: String,
+		group: String,
+		inputScore: Int,
+	): this(firstName, secondName, year, rank, group, organization) {
+		number = inputNumber
+		score = inputScore
 	}
 
 	override fun equals(other: Any?): Boolean {
