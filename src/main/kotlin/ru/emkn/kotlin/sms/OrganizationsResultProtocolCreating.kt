@@ -12,8 +12,12 @@ fun LocalTime.allSeconds() = hour * 3600 + minute * 60 + second
 fun calculateScore(winnerTime: LocalTime, participantTime: LocalTime) =
 	max(0, (100 * (2 - participantTime.allSeconds().toDouble() / winnerTime.allSeconds())).toInt())
 
-fun parseLine(line: List<String>, group: String, winnerTime: LocalTime) =
-	Participant(
+fun parseLine(line: List<String>, group: String, winnerTime: LocalTime): Participant {
+	// Is instead time there is "снят" - score is 0
+	val score = try {
+		calculateScore(winnerTime, parseTime(line[7]))
+	} catch (e : IllegalArgumentException) { 0 }
+	return Participant(
 		line[1].toInt(),
 		line[2],
 		line[3],
@@ -22,8 +26,9 @@ fun parseLine(line: List<String>, group: String, winnerTime: LocalTime) =
 			?: throw IllegalArgumentException("Wrong sport rank"),
 		line[6],
 		group,
-		calculateScore(winnerTime, parseTime(line[7]))
+		score
 	)
+}
 
 
 fun parseResultFile(fileName: String): List<Participant> {

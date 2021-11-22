@@ -50,7 +50,8 @@ fun processResult(readable: InfoReadable, participants: List<Participant>): List
 	readable.getContent().forEach { (number, passedPoints) ->
 		val participant = participants.firstOrNull { it.number == number }
 			?: throw IllegalArgumentException("Participant with this number does not exists or has been processed")
-		if (passedPoints.map { it.second }.sorted() == passedPoints.map { it.second }) {
+		if (passedPoints.map { it.second }.sorted() == passedPoints.map { it.second } &&
+			passedPoints.first().second > participant.startTime) {
 			participant.passedPoints = passedPoints
 			participant.resultTime = timeDistance(passedPoints.last().second, participant.startTime)
 		}
@@ -87,7 +88,7 @@ fun createResultProtocol(participants: List<Participant>) {
 			group.second.forEach {
 				val result = it.resultTime
 				val diff = when {
-					winnerTime == null || result == null ->	"снят"
+					winnerTime == null || result == null -> "снят"
 					else -> "+${timeDistance(result, winnerTime)}"
 				}
 				writeRow(
