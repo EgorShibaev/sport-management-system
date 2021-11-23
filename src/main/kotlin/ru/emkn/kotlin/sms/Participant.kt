@@ -1,7 +1,6 @@
 package ru.emkn.kotlin.sms
 
 import java.time.LocalTime
-import kotlin.properties.Delegates
 
 class Participant(
 	val firstName: String,
@@ -10,11 +9,11 @@ class Participant(
 	val rank: SportRank,
 	val group: String,
 	val organization: String
-): Runnable {
+) {
 
 	var number = numberForParticipant
-	override var startTime: LocalTime = LocalTime.of(12, 0, 0)
-	override var passedPoints: List<Pair<Int, LocalTime>> = emptyList()
+	var startTime: LocalTime = LocalTime.of(12, 0, 0)
+	var passedPoints: List<Pair<Int, LocalTime>> = emptyList()
 	var resultTime: LocalTime? = null
 	var score: Int? = null
 

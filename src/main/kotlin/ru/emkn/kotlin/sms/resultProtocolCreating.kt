@@ -40,6 +40,10 @@ fun getParticipantsList(fileNames: List<String>) =
 		}
 	}.flatten()
 
+/**
+ * These functions get result of function getParticipantsList
+ * and set results for participants.
+ */
 fun interactiveResultRead(participants: List<Participant>): List<Participant> =
 	processResult(InteractiveRead, participants)
 
@@ -59,15 +63,22 @@ fun processResult(readable: InfoReadable, participants: List<Participant>): List
 	return participants
 }
 
+/**
+ * Checking that each participant passed the necessary point
+ */
 fun groupPointsCheck(participants: List<Participant>) {
 	val name = participants[0].group
 	val expectedPoints = csvReader().readAll(File("sample-data/courses.csv")).find { it[0] == name }
 		?: throw IllegalArgumentException("courses.csv isn't complete")
-	assert(participants.all { participant ->
-		participant.passedPoints.map { it.first } == expectedPoints
-	})
+	require(participants.all { participant ->
+		participant.passedPoints.map { it.first.toString() } == expectedPoints.subList(1, expectedPoints.size)
+	}) { "Participant in group $name passed wrong points" }
 }
 
+/**
+ * This function get the result of function
+ * readResultFromFile or interactiveResultRead
+ */
 fun createResultProtocol(participants: List<Participant>) {
 	val groups = participants.groupBy { it.group }.map { Pair(it.key, getRankedList(it.value)) }
 	groups.forEach { groupPointsCheck(it.second) }
@@ -115,7 +126,8 @@ fun timeDistance(time1: LocalTime, time2: LocalTime): LocalTime =
 	time1.minusHours(time2.hour.toLong()).minusMinutes(time2.minute.toLong()).minusSeconds(time2.second.toLong())
 
 
-fun <T : Runnable> getRankedList(list: List<T>): List<T> =
+// sort participants by result
+fun getRankedList(list: List<Participant>): List<Participant> =
 	list.filter { it.passedPoints.isNotEmpty() }.sortedBy {
 		timeDistance(it.passedPoints.last().second, it.startTime)
 	} + list.filter { it.passedPoints.isEmpty() }

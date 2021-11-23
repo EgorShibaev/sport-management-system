@@ -13,10 +13,12 @@ fun calculateScore(winnerTime: LocalTime, participantTime: LocalTime) =
 	max(0, (100 * (2 - participantTime.allSeconds().toDouble() / winnerTime.allSeconds())).toInt())
 
 fun parseLine(line: List<String>, group: String, winnerTime: LocalTime): Participant {
-	// Is instead time there is "снят" - score is 0
+	// Is instead time there is "снят" - score is 0 (parseTime throw exception if time format in incorrect)
 	val score = try {
 		calculateScore(winnerTime, parseTime(line[7]))
-	} catch (e : IllegalArgumentException) { 0 }
+	} catch (e: IllegalArgumentException) {
+		0
+	}
 	return Participant(
 		line[1].toInt(),
 		line[2],
@@ -32,23 +34,28 @@ fun parseLine(line: List<String>, group: String, winnerTime: LocalTime): Partici
 
 
 fun parseResultFile(fileName: String): List<Participant> {
-	var group: String? = null
-	var winnerTime: LocalTime? = null
+	// result file contain information about all groups
+	// for each group there is line with group name, heading line and below
+	// lines with participant
+	var group: String? = null // name of current group
+	var winnerTime: LocalTime? = null // Time of winner in current group
 	val content = csvReader().readAll(File(fileName))
 	val result = mutableListOf<Participant>()
 	content.subList(1, content.size).forEach { row ->
 		when {
 			row.subList(1, row.size).all { it == "" } -> {
+				// lines only with group name
 				group = row[0]
 				winnerTime = null
 			}
-			row[0].toIntOrNull() != null -> {
+			row[0].toIntOrNull() != null -> { // ignoring heading row
 				if (winnerTime == null)
 					winnerTime = parseTime(row[7])
 				val participant = parseLine(
 					row,
 					group ?: throw IllegalArgumentException("Wrong format"),
-					winnerTime ?: throw IllegalArgumentException("Wrong format")
+					winnerTime
+						?: throw IllegalArgumentException("Wrong format") // group and winnerTime must be initialized
 				)
 				result.add(participant)
 			}
@@ -58,6 +65,10 @@ fun parseResultFile(fileName: String): List<Participant> {
 	return result
 }
 
+/**
+ * This function gets result of function parseResultFile and
+ * write info in file result/organizationsResult.csv
+ */
 fun createOrganizationsResultProtocol(participants: List<Participant>) {
 	val groups = participants.groupBy { it.organization }
 	val dirName = "result"
@@ -74,15 +85,17 @@ fun createOrganizationsResultProtocol(participants: List<Participant>) {
 			writeRow(listOf(name) + List(fieldCount - 1) { "" })
 			writeRow(heading)
 			participants.sortedBy { it.score }.reversed().forEach {
-				writeRow(listOf(
-					it.number,
-					it.firstName,
-					it.secondName,
-					it.year,
-					it.rank.russianEquivalent,
-					it.group,
-					it.score
-				))
+				writeRow(
+					listOf(
+						it.number,
+						it.firstName,
+						it.secondName,
+						it.year,
+						it.rank.russianEquivalent,
+						it.group,
+						it.score
+					)
+				)
 			}
 		}
 	}
