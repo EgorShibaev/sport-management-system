@@ -1,7 +1,9 @@
-package ru.emkn.kotlin.sms
+package ru.emkn.kotlin.sms.protocols.creating
 
 import com.github.doyaaaaaken.kotlincsv.dsl.csvReader
 import com.github.doyaaaaaken.kotlincsv.dsl.csvWriter
+import ru.emkn.kotlin.sms.Participant
+import ru.emkn.kotlin.sms.SportRank
 import java.io.File
 import java.lang.Integer.max
 import java.time.LocalTime

@@ -1,6 +1,6 @@
 import ru.emkn.kotlin.sms.Participant
 import ru.emkn.kotlin.sms.SportRank
-import ru.emkn.kotlin.sms.interactiveResultRead
+import ru.emkn.kotlin.sms.protocols.creating.interactiveResultRead
 import java.io.ByteArrayInputStream
 import java.time.LocalTime
 import kotlin.test.*

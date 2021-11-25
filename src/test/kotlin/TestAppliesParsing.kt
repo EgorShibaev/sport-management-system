@@ -1,6 +1,6 @@
 import ru.emkn.kotlin.sms.Participant
 import ru.emkn.kotlin.sms.SportRank
-import ru.emkn.kotlin.sms.parseApplies
+import ru.emkn.kotlin.sms.protocols.creating.parseApplies
 import kotlin.test.*
 
 class TestAppliesParsing {
@@ -17,12 +17,10 @@ class TestAppliesParsing {
 		""".trimIndent()
 		)
 		assertEquals(
-			mapOf(
-				"M1" to listOf(
-					Participant("Сосницкая", "Анна", 2013, SportRank.NONE, "M1", "0-ПСКОВ"),
-					Participant("Сосницкий", "Тимофей", 2008, SportRank.CMS, "M1", "0-ПСКОВ"),
-					Participant("Абросимов", "Василий", 1982, SportRank.III, "M1", "0-ПСКОВ")
-				)
+			listOf(
+				Participant("Сосницкая", "Анна", 2013, SportRank.NONE, "M1", "0-ПСКОВ"),
+				Participant("Сосницкий", "Тимофей", 2008, SportRank.CMS, "M1", "0-ПСКОВ"),
+				Participant("Абросимов", "Василий", 1982, SportRank.III, "M1", "0-ПСКОВ")
 			),
 			parseApplies(content)
 		)
@@ -54,14 +52,13 @@ class TestAppliesParsing {
 		""".trimIndent()
 		)
 		val res = parseApplies(content)
-		assert(res.keys == setOf("M1"))
 		assertEquals(
 			listOf(
 				Participant("Сосницкая", "Анна", 2013, SportRank.NONE, "M1", "0-ПСКОВ"),
 				Participant("Сосницкий", "Тимофей", 2008, SportRank.CMS, "M1", "1-ПСКОВ"),
 				Participant("Абросимов", "Василий", 1982, SportRank.III, "M1", "2-ПСКОВ")
 			).toSet(),
-			res.getValue("M1").toSet()
+			res.toSet()
 		)
 	}
 
@@ -85,15 +82,13 @@ class TestAppliesParsing {
 		""".trimIndent()
 		)
 		val res = parseApplies(content)
-		assert(res.keys == setOf("M1", "M2", "M3"))
-		assert(res.values.all { it.size == 1 })
 		assertEquals(
 			listOf(
 				Participant("Сосницкая", "Анна", 2013, SportRank.NONE, "M1", "0-ПСКОВ"),
 				Participant("Сосницкий", "Тимофей", 2008, SportRank.CMS, "M2", "1-ПСКОВ"),
 				Participant("Абросимов", "Василий", 1982, SportRank.III, "M3", "2-ПСКОВ")
 			).toSet(),
-			res.values.flatten().toSet()
+			res.toSet()
 		)
 	}
 }

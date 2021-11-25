@@ -2,6 +2,7 @@ package ru.emkn.kotlin.sms
 
 import com.github.doyaaaaaken.kotlincsv.dsl.csvReader
 import com.github.doyaaaaaken.kotlincsv.dsl.csvWriter
+import ru.emkn.kotlin.sms.protocols.creating.*
 import java.io.File
 import kotlin.random.Random
 
@@ -35,6 +36,7 @@ fun parseArgs(args: Array<String>): Set<Flags> {
 }
 
 fun main(args: Array<String>) {
+//	creating result and writing it to file splits.csv
 //	createSplitResult(File("start-protocols").listFiles()!!.map { it.absoluteFile.toString() })
 	parseArgs(args).forEach { flag ->
 		try {

@@ -1,7 +1,8 @@
-package ru.emkn.kotlin.sms
+package ru.emkn.kotlin.sms.protocols.creating
 
 import com.github.doyaaaaaken.kotlincsv.dsl.csvReader
 import com.github.doyaaaaaken.kotlincsv.dsl.csvWriter
+import ru.emkn.kotlin.sms.*
 import java.io.File
 import java.time.LocalTime
 
@@ -64,24 +65,11 @@ fun processResult(readable: InfoReadable, participants: List<Participant>): List
 }
 
 /**
- * Checking that each participant passed the necessary point
- */
-fun groupPointsCheck(participants: List<Participant>) {
-	val name = participants[0].group
-	val expectedPoints = csvReader().readAll(File("sample-data/courses.csv")).find { it[0] == name }
-		?: throw IllegalArgumentException("courses.csv isn't complete")
-	require(participants.all { participant ->
-		participant.passedPoints.map { it.first.toString() } == expectedPoints.subList(1, expectedPoints.size)
-	}) { "Participant in group $name passed wrong points" }
-}
-
-/**
  * This function get the result of function
  * readResultFromFile or interactiveResultRead
  */
 fun createResultProtocol(participants: List<Participant>) {
-	val groups = participants.groupBy { it.group }.map { Pair(it.key, getRankedList(it.value)) }
-	groups.forEach { groupPointsCheck(it.second) }
+	val groups = participants.groupBy { it.group }.map { Group(it.value.toMutableList(), true) }
 	val dirName = "result"
 	val fileName = "result.csv"
 	File(dirName).mkdir()
@@ -92,42 +80,15 @@ fun createResultProtocol(participants: List<Participant>) {
 	csvWriter().open("$dirName/$fileName") {
 		writeRow(listOf("Протокол результатов") + List(fieldCount - 1) { "" })
 		groups.forEach { group ->
-			writeRow(listOf(group.first) + List(fieldCount - 1) { "" })
+			writeRow(listOf(group.name) + List(fieldCount - 1) { "" })
 			writeRow(heading)
-			var currentPlace = 1
-			val winnerTime = group.second.first().resultTime
-			group.second.forEach {
-				val result = it.resultTime
-				val diff = when {
-					winnerTime == null || result == null -> "снят"
-					else -> "+${timeDistance(result, winnerTime)}"
-				}
-				writeRow(
-					listOf(
-						currentPlace.toString(),
-						it.number.toString(),
-						it.firstName,
-						it.secondName,
-						it.year.toString(),
-						it.rank.russianEquivalent,
-						it.organization,
-						it.resultTime?.toString() ?: "снят",
-						currentPlace.toString(),
-						diff
-					)
-				)
-				currentPlace++
+			group.resultTable().forEach {
+				writeRow(it)
 			}
 		}
 	}
 }
 
+
 fun timeDistance(time1: LocalTime, time2: LocalTime): LocalTime =
 	time1.minusHours(time2.hour.toLong()).minusMinutes(time2.minute.toLong()).minusSeconds(time2.second.toLong())
-
-
-// sort participants by result
-fun getRankedList(list: List<Participant>): List<Participant> =
-	list.filter { it.passedPoints.isNotEmpty() }.sortedBy {
-		timeDistance(it.passedPoints.last().second, it.startTime)
-	} + list.filter { it.passedPoints.isEmpty() }
