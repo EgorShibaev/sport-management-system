@@ -45,14 +45,16 @@ fun main(args: Array<String>) {
 				Flags.RESULT -> result()
 				Flags.ORGANIZATIONS_RESULT -> organizationsResult()
 			}
-		} catch (e : IllegalArgumentException) {
+		} catch (e: IllegalArgumentException) {
 			println(e.message)
 		}
 	}
-	// sample-data/applications
-	// start-protocols
-	// sample-data/splits.csv
-	// result/result.csv
+/*
+sample-data/applications
+start-protocols
+sample-data/splits.csv
+result/result.csv
+*/
 }
 
 private fun organizationsResult() {
@@ -69,7 +71,7 @@ private fun result() {
 
 	println("(interactive/file):")
 	val way = readLine()?.lowercase() ?: throw IllegalArgumentException()
-	when(way) {
+	when (way) {
 		"file" -> {
 			println("Enter name of file with result")
 			val fileName = readLine() ?: throw IllegalArgumentException()
@@ -94,8 +96,8 @@ private fun createSplitResult(fileNames: List<String>) {
 	fileNames.forEach { fileName ->
 		val content = csvReader().readAll(File(fileName))
 		val name = content[0][0]
-		val pointsRow = csvReader().readAll(File("sample-data/courses.csv")).find { it[0] == name } ?:
-			throw IllegalArgumentException()
+		val pointsRow = csvReader().readAll(File("sample-data/courses.csv")).find { it[0] == name }
+			?: throw IllegalArgumentException()
 		val points = pointsRow.subList(1, pointsRow.size).map { it.toInt() }
 		content.subList(1, content.size).forEach { row ->
 			var currentTime = parseTime(row[5])

@@ -10,6 +10,7 @@ class Group(
 	areResultsReady: Boolean
 ) {
 	val name: String
+
 	// points which participants from this group
 	// should pass
 	private val distance: List<Int>

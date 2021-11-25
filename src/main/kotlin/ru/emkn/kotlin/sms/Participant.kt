@@ -48,7 +48,7 @@ class Participant(
 		organization: String,
 		group: String,
 		inputScore: Int,
-	): this(firstName, secondName, year, rank, group, organization) {
+	) : this(firstName, secondName, year, rank, group, organization) {
 		number = inputNumber
 		score = inputScore
 	}
