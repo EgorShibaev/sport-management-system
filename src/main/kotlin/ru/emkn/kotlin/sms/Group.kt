@@ -18,6 +18,7 @@ class Group(
 
 	init {
 		require(participants.isNotEmpty()) { "The group $participants is empty" }
+		logger.info { "Checking passed" }
 
 		name = participants[0].group
 
@@ -30,8 +31,9 @@ class Group(
 
 			// check that each participant passed the necessary points
 			require(participants.all { participant ->
-				participant.passedPoints.map { it.first } == distance
+				participant.passedPoints.map { it.first } == distance || participant.resultTime == null
 			}) { "Participant in group $name passed wrong points" }
+			logger.info { "Checking passed" }
 
 			sortByTime()
 			winnerTime = participants.first().resultTime
@@ -48,6 +50,7 @@ class Group(
 			else
 				timeDistance(it.passedPoints.last().second, it.startTime)
 		}
+		logger.info { "participants are sorted in group $name" }
 	}
 
 	fun resultTable(): List<List<String>> {
@@ -81,6 +84,7 @@ class Group(
 			it.startTime = it.startTime.plusMinutes(offset)
 			offset += step
 		}
+		logger.info { "time is defined for each participant in group $name" }
 	}
 
 	fun generateStartProtocol(): List<List<String>> {

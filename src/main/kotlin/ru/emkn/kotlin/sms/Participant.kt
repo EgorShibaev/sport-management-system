@@ -21,6 +21,7 @@ class Participant(
 		var numberForParticipant = 0
 			get() {
 				field++
+				logger.info { "New participant's number is created: $field" }
 				return field
 			}
 	}

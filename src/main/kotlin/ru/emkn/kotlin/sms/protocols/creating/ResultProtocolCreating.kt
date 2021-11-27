@@ -74,6 +74,7 @@ fun createResultProtocol(participants: List<Participant>) {
 	val fileName = "result.csv"
 	File(dirName).mkdir()
 	File("$dirName/$fileName").createNewFile()
+	logger.info { "file $dirName/$fileName is created" }
 	val fieldCount = 10
 	val heading =
 		listOf("№ п/п", "Номер", "Фамилия", "Имя", "Г.р.", "Разр.", "Команда", "Результат", "Место", "Отставание")
@@ -87,6 +88,7 @@ fun createResultProtocol(participants: List<Participant>) {
 			}
 		}
 	}
+	logger.info { "Result protocol is created" }
 }
 
 

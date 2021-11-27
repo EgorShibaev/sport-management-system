@@ -4,6 +4,7 @@ import com.github.doyaaaaaken.kotlincsv.dsl.csvReader
 import com.github.doyaaaaaken.kotlincsv.dsl.csvWriter
 import ru.emkn.kotlin.sms.Participant
 import ru.emkn.kotlin.sms.SportRank
+import ru.emkn.kotlin.sms.logger
 import java.io.File
 import java.lang.Integer.max
 import java.time.LocalTime
@@ -64,6 +65,7 @@ fun parseResultFile(fileName: String): List<Participant> {
 		}
 
 	}
+	logger.info { "Result file is parsed" }
 	return result
 }
 
@@ -81,6 +83,7 @@ fun createOrganizationsResultProtocol(participants: List<Participant>) {
 	)
 	File(dirName).mkdir()
 	File("$dirName/$fileName").createNewFile()
+	logger.info { "file with name $dirName/$fileName is created" }
 	csvWriter().open("$dirName/$fileName") {
 		writeRow(listOf("результаты по группам") + List(fieldCount - 1) { "" })
 		groups.forEach { (name, participants) ->
@@ -101,4 +104,5 @@ fun createOrganizationsResultProtocol(participants: List<Participant>) {
 			}
 		}
 	}
+	logger.info { "Result for organizations is created" }
 }

@@ -5,6 +5,7 @@ import com.github.doyaaaaaken.kotlincsv.dsl.csvWriter
 import ru.emkn.kotlin.sms.Group
 import ru.emkn.kotlin.sms.Participant
 import ru.emkn.kotlin.sms.SportRank
+import ru.emkn.kotlin.sms.logger
 import java.io.File
 
 fun getGroups(fileNames: List<String>) =
@@ -41,6 +42,7 @@ fun writeStartProtocol(inputFileNames: List<String>) {
 		File("start-protocols").mkdir()
 		File(outputFileName).createNewFile()
 		csvWriter().writeAll(it, outputFileName)
+		logger.info { "start protocol $outputFileName is created" }
 		currentFileNumber++
 	}
 }

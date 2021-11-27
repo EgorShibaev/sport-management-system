@@ -2,9 +2,12 @@ package ru.emkn.kotlin.sms
 
 import com.github.doyaaaaaken.kotlincsv.dsl.csvReader
 import com.github.doyaaaaaken.kotlincsv.dsl.csvWriter
+import mu.KotlinLogging
 import ru.emkn.kotlin.sms.protocols.creating.*
 import java.io.File
 import kotlin.random.Random
+
+val logger = KotlinLogging.logger {}
 
 enum class Flags {
 	START, RESULT, ORGANIZATIONS_RESULT
@@ -17,7 +20,7 @@ fun parseArgs(args: Array<String>): Set<Flags> {
 				it.substring(1..it.lastIndex).toSet()
 			}
 			else -> {
-				// logging
+				logger.warn { "Incorrect flag format: $it" }
 				setOf()
 			}
 		}
@@ -28,7 +31,7 @@ fun parseArgs(args: Array<String>): Set<Flags> {
 			's' -> Flags.START
 			'o' -> Flags.ORGANIZATIONS_RESULT
 			else -> {
-				// logging
+				logger.warn { "Unknown flag $it. This flag will be ignored" }
 				null
 			}
 		}
@@ -58,12 +61,14 @@ result/result.csv
 }
 
 private fun organizationsResult() {
+	logger.info { "Creating result for organizations is started" }
 	println("Enter name of file with result for groups")
 	val fileName = readLine() ?: throw IllegalArgumentException()
 	createOrganizationsResultProtocol(parseResultFile(fileName))
 }
 
 private fun result() {
+	logger.info { "Creating result for groups is started" }
 	println("Enter names directory with start protocols")
 	val dirName = readLine() ?: throw IllegalArgumentException()
 	val protocolNames = File(dirName).listFiles()?.map { it.absoluteFile.toString() }
@@ -84,6 +89,7 @@ private fun result() {
 }
 
 private fun start() {
+	logger.info { "Creating started protocols is started" }
 	println("Enter name of directory with applications:")
 	val dirName = readLine() ?: throw IllegalArgumentException()
 	val fileNames = File(dirName).listFiles()?.map { it.absoluteFile.toString() }
@@ -108,5 +114,7 @@ private fun createSplitResult(fileNames: List<String>) {
 			result.add(resultRow)
 		}
 	}
-	csvWriter().writeAll(result, "sample-data/splits.csv")
+	val fileName = "sample-data/splits.csv"
+	logger.info { "Changing $fileName content" }
+	csvWriter().writeAll(result, fileName)
 }
