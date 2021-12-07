@@ -8,6 +8,9 @@ import java.time.LocalTime
 /**
  * This interface is used for reading result from file(split.scv) or from console
  */
+
+
+
 interface InfoReadable {
 	// return pair - number of participant and list of passed points - Number of point and time
 	// return null when info ended

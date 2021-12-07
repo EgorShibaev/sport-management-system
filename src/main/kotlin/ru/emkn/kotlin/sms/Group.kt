@@ -1,8 +1,6 @@
 package ru.emkn.kotlin.sms
 
-import com.github.doyaaaaaken.kotlincsv.dsl.csvReader
 import ru.emkn.kotlin.sms.protocols.creating.timeDistance
-import java.io.File
 import java.time.LocalTime
 
 class Group(
@@ -23,11 +21,7 @@ class Group(
 		name = participants[0].group
 
 		if (areResultsReady) {
-			val fileName = "sample-data/courses.csv"
-			val courses = csvReader().readAll(File(fileName))
-			val currentGroupRow = courses.subList(1, courses.size).find { it[0] == name }
-			distance = currentGroupRow?.subList(1, currentGroupRow.size)?.map { it.toInt() }
-				?: throw IllegalArgumentException("Wrong format in line $currentGroupRow in file $fileName")
+			distance = CoursesFromFileReader.distanceForGroup(name)
 
 			// check that each participant passed the necessary points
 			require(participants.all { participant ->

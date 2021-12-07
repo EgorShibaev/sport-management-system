@@ -102,9 +102,7 @@ private fun createSplitResult(fileNames: List<String>) {
 	fileNames.forEach { fileName ->
 		val content = csvReader().readAll(File(fileName))
 		val name = content[0][0]
-		val pointsRow = csvReader().readAll(File("sample-data/courses.csv")).find { it[0] == name }
-			?: throw IllegalArgumentException()
-		val points = pointsRow.subList(1, pointsRow.size).map { it.toInt() }
+		val points = CoursesFromFileReader.distanceForGroup(name)
 		content.subList(1, content.size).forEach { row ->
 			var currentTime = parseTime(row[5])
 			val resultRow = mutableListOf(row[0]) + points.map {
