@@ -73,8 +73,8 @@ class Group(
 
 	fun defineTimeForParticipants() {
 		var offset = 0L
-		val step = 5
-		participants.forEach {
+		val step = 1
+		participants.shuffled().forEach {
 			it.startTime = it.startTime.plusMinutes(offset)
 			offset += step
 		}
