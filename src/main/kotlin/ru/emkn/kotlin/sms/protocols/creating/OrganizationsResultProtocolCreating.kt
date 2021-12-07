@@ -23,15 +23,15 @@ fun parseLine(line: List<String>, group: String, winnerTime: LocalTime): Partici
 		0
 	}
 	return Participant(
-		line[1].toInt(),
-		line[2],
-		line[3],
-		line[4].toInt(),
-		SportRank.values().firstOrNull { it.russianEquivalent == line[5] }
+		number = line[1].toInt(),
+		firstName = line[2],
+		lastName = line[3],
+		year = line[4].toInt(),
+		rank = SportRank.values().firstOrNull { it.russianEquivalent == line[5] }
 			?: throw IllegalArgumentException("Wrong sport rank"),
-		line[6],
-		group,
-		score
+		organization = line[6],
+		group = group,
+		score = score
 	)
 }
 
@@ -94,7 +94,7 @@ fun createOrganizationsResultProtocol(participants: List<Participant>) {
 					listOf(
 						it.number,
 						it.firstName,
-						it.secondName,
+						it.lastName,
 						it.year,
 						it.rank.russianEquivalent,
 						it.group,

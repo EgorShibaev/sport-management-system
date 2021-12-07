@@ -16,6 +16,12 @@ class TestAppliesParsing {
 			M1,Абросимов,Василий,1982,3р
 		""".trimIndent()
 		)
+		println(listOf(
+			Participant("Сосницкая", "Анна", 2013, SportRank.NONE, "M1", "0-ПСКОВ"),
+			Participant("Сосницкий", "Тимофей", 2008, SportRank.CMS, "M1", "0-ПСКОВ"),
+			Participant("Абросимов", "Василий", 1982, SportRank.III, "M1", "0-ПСКОВ")
+		))
+		println(parseApplies(content))
 		assertEquals(
 			listOf(
 				Participant("Сосницкая", "Анна", 2013, SportRank.NONE, "M1", "0-ПСКОВ"),

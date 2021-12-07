@@ -57,7 +57,7 @@ class Group(
 				currentPlace.toString(),
 				it.number.toString(),
 				it.firstName,
-				it.secondName,
+				it.lastName,
 				it.year.toString(),
 				it.rank.russianEquivalent,
 				it.organization,
@@ -83,7 +83,7 @@ class Group(
 			listOf(
 				participant.number.toString(),
 				participant.firstName,
-				participant.secondName,
+				participant.lastName,
 				participant.year.toString(),
 				participant.rank.russianEquivalent,
 				participant.startTime.toString(),

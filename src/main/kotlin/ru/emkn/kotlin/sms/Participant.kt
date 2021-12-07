@@ -2,20 +2,19 @@ package ru.emkn.kotlin.sms
 
 import java.time.LocalTime
 
-class Participant(
+data class Participant(
 	val firstName: String,
-	val secondName: String,
+	val lastName: String,
 	val year: Int,
 	val rank: SportRank,
 	val group: String,
-	val organization: String
-) {
-
-	var number = numberForParticipant
-	var startTime: LocalTime = LocalTime.of(12, 0, 0)
-	var passedPoints: List<Sample> = emptyList()
-	var resultTime: LocalTime? = null
+	val organization: String,
+	var number: Int = numberForParticipant,
+	var startTime: LocalTime = LocalTime.of(12, 0, 0),
+	var passedPoints: List<Sample> = emptyList(),
+	var resultTime: LocalTime? = null,
 	var score: Int? = null
+) {
 
 	companion object {
 		var numberForParticipant = 0
@@ -26,32 +25,10 @@ class Participant(
 			}
 	}
 
-	constructor(
-		inputNumber: Int,
-		firstName: String,
-		secondName: String,
-		year: Int,
-		rank: SportRank,
-		inputStartTime: LocalTime,
-		organization: String,
-		group: String
-	) : this(firstName, secondName, year, rank, group, organization) {
-		startTime = inputStartTime
-		number = inputNumber
-	}
 
-	constructor(
-		inputNumber: Int,
-		firstName: String,
-		secondName: String,
-		year: Int,
-		rank: SportRank,
-		organization: String,
-		group: String,
-		inputScore: Int,
-	) : this(firstName, secondName, year, rank, group, organization) {
-		number = inputNumber
-		score = inputScore
+
+	override fun toString(): String {
+		return "Participant(firstName='$firstName', SecondName='$lastName', year=$year, rank=$rank, group='$group', organization='$organization')"
 	}
 
 	override fun equals(other: Any?): Boolean {
@@ -61,7 +38,7 @@ class Participant(
 		other as Participant
 
 		if (firstName != other.firstName) return false
-		if (secondName != other.secondName) return false
+		if (lastName != other.lastName) return false
 		if (year != other.year) return false
 
 		return true
@@ -69,13 +46,9 @@ class Participant(
 
 	override fun hashCode(): Int {
 		var result = firstName.hashCode()
-		result = 31 * result + secondName.hashCode()
+		result = 31 * result + lastName.hashCode()
 		result = 31 * result + year
 		return result
-	}
-
-	override fun toString(): String {
-		return "Participant(firstName='$firstName', SecondName='$secondName', year=$year, rank=$rank, group='$group', organization='$organization')"
 	}
 
 }

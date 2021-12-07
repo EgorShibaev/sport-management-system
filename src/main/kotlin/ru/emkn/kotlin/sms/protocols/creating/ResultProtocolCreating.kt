@@ -29,14 +29,14 @@ fun getParticipantsList(fileNames: List<String>) =
 		val group = content[0][0]
 		content.subList(1, content.lastIndex + 1).map { args ->
 			Participant(
-				args[0].toInt(),
-				args[1],
-				args[2],
-				args[3].toInt(),
-				SportRank.values().first { it.russianEquivalent == args[4] },
-				parseTime(args[5]),
-				args[6],
-				group
+				number = args[0].toInt(),
+				firstName = args[1],
+				lastName = args[2],
+				year = args[3].toInt(),
+				rank = SportRank.values().first { it.russianEquivalent == args[4] },
+				resultTime = parseTime(args[5]),
+				organization = args[6],
+				group = group
 			)
 		}
 	}.flatten()

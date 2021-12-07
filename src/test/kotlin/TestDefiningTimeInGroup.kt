@@ -7,9 +7,36 @@ import kotlin.test.*
 
 class TestDefiningTimeInGroup {
 
-	private val part1 = Participant(1, "a", "a", 1, SportRank.III, LocalTime.of(12, 0, 0), "a", "M1")
-	private val part2 = Participant(2, "b", "b", 1, SportRank.III, LocalTime.of(12, 0, 0), "a", "M1")
-	private val part3 = Participant(3, "c", "c", 1, SportRank.III, LocalTime.of(12, 0, 0), "a", "M1")
+	private val part1 = Participant(
+		number = 1,
+		firstName = "a",
+		lastName = "a",
+		year = 1,
+		rank = SportRank.III,
+		startTime = LocalTime.of(12, 0, 0),
+		organization = "a",
+		group = "M1"
+	)
+	private val part2 = Participant(
+		number = 2,
+		firstName = "b",
+		lastName = "b",
+		year = 1,
+		rank = SportRank.III,
+		startTime = LocalTime.of(12, 0, 0),
+		organization = "a",
+		group = "M1"
+	)
+	private val part3 = Participant(
+		number = 3,
+		firstName = "c",
+		lastName = "c",
+		year = 1,
+		rank = SportRank.III,
+		startTime = LocalTime.of(12, 0, 0),
+		organization = "a",
+		group = "M1"
+	)
 
 
 	@Test
