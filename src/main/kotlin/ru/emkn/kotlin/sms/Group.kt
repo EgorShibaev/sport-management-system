@@ -25,7 +25,7 @@ class Group(
 
 			// check that each participant passed the necessary points
 			require(participants.all { participant ->
-				participant.passedPoints.map { it.first } == distance || participant.resultTime == null
+				participant.passedPoints.map { it.pointId } == distance || participant.resultTime == null
 			}) { "Participant in group $name passed wrong points" }
 			logger.info { "Checking passed" }
 
@@ -39,10 +39,7 @@ class Group(
 
 	private fun sortByTime() {
 		participants.sortBy {
-			if (it.passedPoints.isEmpty())
-				LocalTime.MAX
-			else
-				timeDistance(it.passedPoints.last().second, it.startTime)
+			it.resultTime ?: LocalTime.MAX
 		}
 		logger.info { "participants are sorted in group $name" }
 	}

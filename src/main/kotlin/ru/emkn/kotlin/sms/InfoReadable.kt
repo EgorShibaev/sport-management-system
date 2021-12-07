@@ -9,17 +9,17 @@ import java.time.LocalTime
  * This interface is used for reading result from file(split.scv) or from console
  */
 
+data class Sample(val pointId: Int, val result: LocalTime)
 
+data class ParticipantResult(val id: Int, val result: List<Sample>)
 
 interface InfoReadable {
-	// return pair - number of participant and list of passed points - Number of point and time
-	// return null when info ended
-	fun getContent(): Map<Int, List<Pair<Int, LocalTime>>>
+	fun getContent(): List<ParticipantResult>
 }
 
 object InteractiveRead : InfoReadable {
-	override fun getContent(): Map<Int, List<Pair<Int, LocalTime>>> {
-		val result = mutableMapOf<Int, List<Pair<Int, LocalTime>>>()
+	override fun getContent(): List<ParticipantResult> {
+		val result = mutableListOf<ParticipantResult>()
 		while (true) {
 			println("Participant number (enter 'end' if you want to end):")
 			val input = readLine() ?: throw IllegalArgumentException()
@@ -28,13 +28,13 @@ object InteractiveRead : InfoReadable {
 			val number = input.toIntOrNull() ?: throw IllegalArgumentException()
 			println("Points count:")
 			val count = readLine()?.toIntOrNull() ?: throw IllegalArgumentException()
-			val passedPoints = mutableListOf<Pair<Int, LocalTime>>()
+			val passedPoints = mutableListOf<Sample>()
 			repeat(count) {
 				val pointNumber = readLine()?.toIntOrNull() ?: throw IllegalArgumentException()
 				val time = parseTime(readLine() ?: throw IllegalArgumentException())
-				passedPoints.add(Pair(pointNumber, time))
+				passedPoints.add(Sample(pointNumber, time))
 			}
-			result[number] = passedPoints
+			result.add(ParticipantResult(number, passedPoints))
 		}
 		return result
 	}
@@ -42,16 +42,16 @@ object InteractiveRead : InfoReadable {
 
 
 class ReadFromFile(private val fileName: String) : InfoReadable {
-	override fun getContent(): Map<Int, List<Pair<Int, LocalTime>>> =
-		csvReader().readAll(File(fileName)).associate { row ->
+	override fun getContent(): List<ParticipantResult> =
+		csvReader().readAll(File(fileName)).map { row ->
 			val number = row[0].toIntOrNull() ?: throw IllegalArgumentException()
 			require(row.size % 2 == 1) { "Wrong input line format" }
 			val passedPoints = row.subList(1, row.size).chunked(2).map {
-				Pair(
+				Sample(
 					it[0].toIntOrNull() ?: throw IllegalArgumentException("Point number should be number"),
 					parseTime(it[1])
 				)
 			}
-			Pair(number, passedPoints)
+			ParticipantResult(number, passedPoints)
 		}
 }

@@ -16,9 +16,13 @@ class TestDefiningTimeInGroup {
 	fun testThreeParticipants() {
 		val group = Group(mutableListOf(part1, part2, part3), false)
 		group.defineTimeForParticipants()
-		assertEquals(part1.startTime, LocalTime.of(12, 0, 0))
-		assertEquals(part2.startTime, LocalTime.of(12, 5, 0))
-		assertEquals(part3.startTime, LocalTime.of(12, 10, 0))
+		assertEquals(
+			setOf(
+				LocalTime.of(12, 0),
+				LocalTime.of(12, 1),
+				LocalTime.of(12, 2),
+			), setOf(part1.startTime, part2.startTime, part3.startTime)
+		)
 	}
 
 	@Test
@@ -29,8 +33,8 @@ class TestDefiningTimeInGroup {
 		}
 		val group = Group(parts, false)
 		group.defineTimeForParticipants()
-		parts.withIndex().forEach {
-			assertEquals(12 * 3600 + it.index * 300, it.value.startTime.allSeconds())
-		}
+		assertEquals(
+			(0..99).map { 12 * 3600 + it * 60 }.toSet(), parts.map { it.startTime.allSeconds() }.toSet()
+		)
 	}
 }

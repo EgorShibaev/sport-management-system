@@ -13,7 +13,7 @@ class Participant(
 
 	var number = numberForParticipant
 	var startTime: LocalTime = LocalTime.of(12, 0, 0)
-	var passedPoints: List<Pair<Int, LocalTime>> = emptyList()
+	var passedPoints: List<Sample> = emptyList()
 	var resultTime: LocalTime? = null
 	var score: Int? = null
 
