@@ -1,5 +1,8 @@
 package ru.emkn.kotlin.sms
 
+import com.apurebase.arkenv.Arkenv
+import com.apurebase.arkenv.util.argument
+import com.apurebase.arkenv.util.parse
 import com.github.doyaaaaaken.kotlincsv.dsl.csvReader
 import com.github.doyaaaaaken.kotlincsv.dsl.csvWriter
 import mu.KotlinLogging
@@ -9,56 +12,32 @@ import kotlin.random.Random
 
 val logger = KotlinLogging.logger {}
 
-enum class Flags {
-	START, RESULT, ORGANIZATIONS_RESULT
-}
-
-fun parseArgs(args: Array<String>): Set<Flags> {
-	val flags = args.map {
-		when {
-			it[0] == '-' && it.substring(1..it.lastIndex).all { ch -> ch.isLetter() } -> {
-				it.substring(1..it.lastIndex).toSet()
-			}
-			else -> {
-				logger.warn { "Incorrect flag format: $it" }
-				setOf()
-			}
-		}
-	}.flatten().toSet()
-	return flags.mapNotNull {
-		when (it) {
-			'r' -> Flags.RESULT
-			's' -> Flags.START
-			'o' -> Flags.ORGANIZATIONS_RESULT
-			else -> {
-				logger.warn { "Unknown flag $it. This flag will be ignored" }
-				null
-			}
-		}
-	}.toSet()
+object Arguments {
+	val mode: String by argument()
 }
 
 fun main(args: Array<String>) {
 //	creating result and writing it to file splits.csv
 //	createSplitResult(File("start-protocols").listFiles()!!.map { it.absoluteFile.toString() })
-	parseArgs(args).forEach { flag ->
-		try {
-			when (flag) {
-				Flags.START -> start()
-				Flags.RESULT -> result()
-				Flags.ORGANIZATIONS_RESULT -> organizationsResult()
-			}
-		} catch (e: IllegalArgumentException) {
-			println(e.message)
+	Arkenv.parse(Arguments, args)
+	try {
+		when (Arguments.mode.lowercase()) {
+			"start" -> start()
+			"result" -> result()
+			"orgresult" -> organizationsResult()
+			else -> throw IllegalArgumentException("Unknown flag")
 		}
+	} catch (e: IllegalArgumentException) {
+		println(e.message)
 	}
+}
 /*
 sample-data/applications
 start-protocols
 sample-data/splits.csv
 result/result.csv
 */
-}
+
 
 private fun organizationsResult() {
 	logger.info { "Creating result for organizations is started" }
