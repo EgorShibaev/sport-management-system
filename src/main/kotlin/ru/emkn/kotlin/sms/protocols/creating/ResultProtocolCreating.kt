@@ -7,13 +7,13 @@ import java.io.File
 import java.time.LocalTime
 
 fun parseTime(s: String): LocalTime = when {
-	"""\d\d:\d\d:\d\d""".toRegex().matches(s) -> {
+	"""(\d\d):(\d\d):(\d\d)""".toRegex().matches(s) -> {
 		val hours = s.substring(0..1).toInt()
 		val minute = s.substring(3..4).toInt()
 		val second = s.substring(6..7).toInt()
 		LocalTime.of(hours, minute, second)
 	}
-	"""\d\d:\d\d""".toRegex().matches(s) -> {
+	"""(\d\d):(\d\d)""".toRegex().matches(s) -> {
 		val hours = s.substring(0..1).toInt()
 		val minute = s.substring(3..4).toInt()
 		LocalTime.of(hours, minute)

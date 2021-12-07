@@ -19,13 +19,13 @@ fun parseApplies(applicationsContent: List<String>): List<Participant> =
 		val organization = rows[0][0]
 		val participants = rows.subList(2, rows.lastIndex + 1).map { args ->
 			Participant(
-				args[1],
-				args[2],
-				args[3].toInt(),
-				SportRank.values().firstOrNull { args[4] == it.russianEquivalent }
+				firstName = args[1],
+				lastName = args[2],
+				year = args[3].toInt(),
+				rank = SportRank.values().firstOrNull { args[4] == it.russianEquivalent }
 					?: throw IllegalArgumentException("incorrect rank"),
-				args[0],
-				organization
+				group = args[0],
+				organization = organization
 			)
 		}
 		participants

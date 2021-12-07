@@ -25,8 +25,6 @@ data class Participant(
 			}
 	}
 
-
-
 	override fun toString(): String {
 		return "Participant(firstName='$firstName', SecondName='$lastName', year=$year, rank=$rank, group='$group', organization='$organization')"
 	}
