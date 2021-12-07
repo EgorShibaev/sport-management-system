@@ -55,11 +55,7 @@ fun processResult(readable: InfoReadable, participants: List<Participant>): List
 	readable.getContent().forEach { (number, passedPoints) ->
 		val participant = participants.firstOrNull { it.number == number }
 			?: throw IllegalArgumentException("Participant with this number does not exists or has been processed")
-		if (passedPoints.map { it.result }.sorted() == passedPoints.map { it.result } &&
-			passedPoints.first().result > participant.startTime) {
-			participant.passedPoints = passedPoints
-			participant.resultTime = timeDistance(passedPoints.last().result, participant.startTime)
-		}
+		participant.passedPoints = passedPoints
 	}
 	return participants
 }

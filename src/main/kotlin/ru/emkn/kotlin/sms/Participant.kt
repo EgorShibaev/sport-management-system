@@ -11,7 +11,7 @@ data class Participant(
 	val organization: String,
 	var number: Int = numberForParticipant,
 	var startTime: LocalTime = LocalTime.of(12, 0, 0),
-	var passedPoints: List<Sample> = emptyList(),
+	var passedPoints: List<PassedPoint> = emptyList(),
 	var resultTime: LocalTime? = null,
 	var score: Int? = null
 ) {

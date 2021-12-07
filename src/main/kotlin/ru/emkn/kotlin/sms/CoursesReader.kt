@@ -4,7 +4,7 @@ import com.github.doyaaaaaken.kotlincsv.dsl.csvReader
 import java.io.File
 
 interface CoursesReader {
-	fun distanceForGroup(groupName: String): List<Int>
+	fun distanceForGroup(groupName: String): Distance
 }
 
 object CoursesFromFileReader: CoursesReader {
@@ -13,9 +13,10 @@ object CoursesFromFileReader: CoursesReader {
 
 	private val courses = csvReader().readAll(File(coursesFileName))
 
-	override fun distanceForGroup(groupName: String): List<Int> {
+	override fun distanceForGroup(groupName: String): Distance {
 		val groupRow = courses.subList(1, courses.size).find { it[0] == groupName }
-		return groupRow?.subList(1, groupRow.size)?.map { it.toInt() }
+		val points = groupRow?.subList(1, groupRow.size)?.map { it.toInt() }
 			?: throw IllegalArgumentException("Wrong format in line $groupRow in file $coursesFileName")
+		return PlainDistance(points)
 	}
 }

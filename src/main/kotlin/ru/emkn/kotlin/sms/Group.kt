@@ -11,7 +11,7 @@ class Group(
 
 	// points which participants from this group
 	// should pass
-	private val distance: List<Int>
+	private val distance: Distance
 	private val winnerTime: LocalTime? // null when each participant was dropped
 
 	init {
@@ -23,16 +23,11 @@ class Group(
 		if (areResultsReady) {
 			distance = CoursesFromFileReader.distanceForGroup(name)
 
-			// check that each participant passed the necessary points
-			require(participants.all { participant ->
-				participant.passedPoints.map { it.pointId } == distance || participant.resultTime == null
-			}) { "Participant in group $name passed wrong points" }
-			logger.info { "Checking passed" }
-
+			participants.forEach { it.resultTime = distance.totalTime(it.passedPoints, it.startTime) }
 			sortByTime()
 			winnerTime = participants.first().resultTime
 		} else {
-			distance = emptyList()
+			distance = PlainDistance(emptyList())
 			winnerTime = null
 		}
 	}

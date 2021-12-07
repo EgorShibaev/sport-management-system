@@ -1,5 +1,5 @@
 import ru.emkn.kotlin.sms.Participant
-import ru.emkn.kotlin.sms.Sample
+import ru.emkn.kotlin.sms.PassedPoint
 import ru.emkn.kotlin.sms.SportRank
 import ru.emkn.kotlin.sms.protocols.creating.interactiveResultRead
 import java.io.ByteArrayInputStream
@@ -39,6 +39,7 @@ class TestInteractiveResultRead {
 		organization = "a",
 		group = "M1"
 	)
+
 	@AfterTest
 	fun tearDown() {
 		System.setIn(standardIn)
@@ -50,7 +51,7 @@ class TestInteractiveResultRead {
 		val res = interactiveResultRead(listOf(part1))
 		assert(res.size == 1)
 		assertEquals(res[0], part1)
-		assertEquals(res[0].passedPoints, listOf(Sample(2134, LocalTime.of(12, 0, 1))))
+		assertEquals(res[0].passedPoints, listOf(PassedPoint(2134, LocalTime.of(12, 0, 1))))
 	}
 
 	@Test
@@ -90,7 +91,10 @@ class TestInteractiveResultRead {
 		val res = interactiveResultRead(listOf(part1, part2, part3))
 		assertContentEquals(listOf(part1, part2, part3), res)
 		assert(res.all {
-			it.passedPoints == listOf(Sample(1, LocalTime.of(12, 2)), Sample(2, LocalTime.of(12, 5)))
+			it.passedPoints == listOf(
+				PassedPoint(1, LocalTime.of(12, 2)),
+				PassedPoint(2, LocalTime.of(12, 5))
+			)
 		})
 	}
 

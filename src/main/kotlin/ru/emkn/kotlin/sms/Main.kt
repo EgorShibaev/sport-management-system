@@ -84,7 +84,7 @@ private fun createSplitResult(fileNames: List<String>) {
 		val points = CoursesFromFileReader.distanceForGroup(name)
 		content.subList(1, content.size).forEach { row ->
 			var currentTime = parseTime(row[5])
-			val resultRow = mutableListOf(row[0]) + points.map {
+			val resultRow = mutableListOf(row[0]) + points.points.map {
 				currentTime = currentTime.plusSeconds(Random.nextLong(500))
 				listOf(it.toString(), currentTime.toString())
 			}.flatten()
