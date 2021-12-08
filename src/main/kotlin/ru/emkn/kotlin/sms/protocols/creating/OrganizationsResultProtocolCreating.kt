@@ -12,9 +12,10 @@ import java.lang.Integer.max
 fun calculateScore(winnerTime: Time, participantTime: Time) =
 	max(0, (100 * (2 - participantTime.allSecond.toDouble() / winnerTime.allSecond)).toInt())
 
-fun parseLine(line: List<String>, group: String, winnerTime: Time): Participant {
+fun parseLine(line: List<String>, group: String, winnerTime: Time?): Participant {
 	// Is instead time there is "снят" - score is 0 (parseTime throw exception if time format in incorrect)
 	val score = try {
+		require(winnerTime != null)
 		calculateScore(winnerTime, Time(line[7]))
 	} catch (e: IllegalArgumentException) {
 		0
@@ -49,13 +50,12 @@ fun parseResultFile(fileName: String): List<Participant> {
 				winnerTime = null
 			}
 			row[0].toIntOrNull() != null -> { // ignoring heading row
-				if (winnerTime == null)
+				if (winnerTime == null && row[7] != "снят")
 					winnerTime = Time(row[7])
 				val participant = parseLine(
 					row,
 					group ?: throw IllegalArgumentException("Wrong format"),
 					winnerTime
-						?: throw IllegalArgumentException("Wrong format") // group and winnerTime must be initialized
 				)
 				result.add(participant)
 			}
