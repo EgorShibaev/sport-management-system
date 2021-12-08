@@ -1,7 +1,6 @@
 package ru.emkn.kotlin.sms
 
-import ru.emkn.kotlin.sms.protocols.creating.timeDistance
-import java.time.LocalTime
+import java.util.*
 
 class Group(
 	private val participants: MutableList<Participant>,
@@ -12,7 +11,7 @@ class Group(
 	// points which participants from this group
 	// should pass
 	private val distance: Distance
-	private val winnerTime: LocalTime? // null when each participant was dropped
+	private val winnerTime: Time? // null when each participant was dropped
 
 	init {
 		require(participants.isNotEmpty()) { "The group $participants is empty" }
@@ -34,7 +33,7 @@ class Group(
 
 	private fun sortByTime() {
 		participants.sortBy {
-			it.resultTime ?: LocalTime.MAX
+			it.resultTime ?: Time.MAX
 		}
 		logger.info { "participants are sorted in group $name" }
 	}
@@ -46,7 +45,7 @@ class Group(
 			val result = it.resultTime
 			val diff = when {
 				winnerTime == null || result == null -> "снят"
-				else -> "+${timeDistance(result, winnerTime)}"
+				else -> "+${result - winnerTime}"
 			}
 			listOf(
 				currentPlace.toString(),
@@ -64,10 +63,10 @@ class Group(
 	}
 
 	fun defineTimeForParticipants() {
-		var offset = 0L
+		var offset = 0
 		val step = 1
-		participants.shuffled().forEach {
-			it.startTime = it.startTime.plusMinutes(offset)
+		participants.shuffled(Random(1)).forEach {
+			it.startTime = it.startTime + (offset * 60)
 			offset += step
 		}
 		logger.info { "time is defined for each participant in group $name" }

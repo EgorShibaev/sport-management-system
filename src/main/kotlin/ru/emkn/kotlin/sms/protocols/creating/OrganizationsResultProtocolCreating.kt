@@ -4,21 +4,18 @@ import com.github.doyaaaaaken.kotlincsv.dsl.csvReader
 import com.github.doyaaaaaken.kotlincsv.dsl.csvWriter
 import ru.emkn.kotlin.sms.Participant
 import ru.emkn.kotlin.sms.SportRank
+import ru.emkn.kotlin.sms.Time
 import ru.emkn.kotlin.sms.logger
 import java.io.File
 import java.lang.Integer.max
-import java.time.LocalTime
 
+fun calculateScore(winnerTime: Time, participantTime: Time) =
+	max(0, (100 * (2 - participantTime.allSecond.toDouble() / winnerTime.allSecond)).toInt())
 
-fun LocalTime.allSeconds() = hour * 3600 + minute * 60 + second
-
-fun calculateScore(winnerTime: LocalTime, participantTime: LocalTime) =
-	max(0, (100 * (2 - participantTime.allSeconds().toDouble() / winnerTime.allSeconds())).toInt())
-
-fun parseLine(line: List<String>, group: String, winnerTime: LocalTime): Participant {
+fun parseLine(line: List<String>, group: String, winnerTime: Time): Participant {
 	// Is instead time there is "снят" - score is 0 (parseTime throw exception if time format in incorrect)
 	val score = try {
-		calculateScore(winnerTime, parseTime(line[7]))
+		calculateScore(winnerTime, Time(line[7]))
 	} catch (e: IllegalArgumentException) {
 		0
 	}
@@ -41,7 +38,7 @@ fun parseResultFile(fileName: String): List<Participant> {
 	// for each group there is line with group name, heading line and below
 	// lines with participant
 	var group: String? = null // name of current group
-	var winnerTime: LocalTime? = null // Time of winner in current group
+	var winnerTime: Time? = null // Time of winner in current group
 	val content = csvReader().readAll(File(fileName))
 	val result = mutableListOf<Participant>()
 	content.subList(1, content.size).forEach { row ->
@@ -53,7 +50,7 @@ fun parseResultFile(fileName: String): List<Participant> {
 			}
 			row[0].toIntOrNull() != null -> { // ignoring heading row
 				if (winnerTime == null)
-					winnerTime = parseTime(row[7])
+					winnerTime = Time(row[7])
 				val participant = parseLine(
 					row,
 					group ?: throw IllegalArgumentException("Wrong format"),

@@ -25,6 +25,11 @@ fun main(args: Array<String>) {
 			"start" -> start()
 			"result" -> result()
 			"orgresult" -> organizationsResult()
+			"all" -> {
+				start()
+				result()
+				organizationsResult()
+			}
 			else -> throw IllegalArgumentException("Unknown flag")
 		}
 	} catch (e: IllegalArgumentException) {
@@ -83,9 +88,9 @@ private fun createSplitResult(fileNames: List<String>) {
 		val name = content[0][0]
 		val points = CoursesFromFileReader.distanceForGroup(name)
 		content.subList(1, content.size).forEach { row ->
-			var currentTime = parseTime(row[5])
+			var currentTime = Time(row[5])
 			val resultRow = mutableListOf(row[0]) + points.points.map {
-				currentTime = currentTime.plusSeconds(Random.nextLong(500))
+				currentTime += Random.nextInt(500)
 				listOf(it.toString(), currentTime.toString())
 			}.flatten()
 			result.add(resultRow)

@@ -4,22 +4,6 @@ import com.github.doyaaaaaken.kotlincsv.dsl.csvReader
 import com.github.doyaaaaaken.kotlincsv.dsl.csvWriter
 import ru.emkn.kotlin.sms.*
 import java.io.File
-import java.time.LocalTime
-
-fun parseTime(s: String): LocalTime = when {
-	"""(\d\d):(\d\d):(\d\d)""".toRegex().matches(s) -> {
-		val hours = s.substring(0..1).toInt()
-		val minute = s.substring(3..4).toInt()
-		val second = s.substring(6..7).toInt()
-		LocalTime.of(hours, minute, second)
-	}
-	"""(\d\d):(\d\d)""".toRegex().matches(s) -> {
-		val hours = s.substring(0..1).toInt()
-		val minute = s.substring(3..4).toInt()
-		LocalTime.of(hours, minute)
-	}
-	else -> throw IllegalArgumentException("Incorrect time format")
-}
 
 // fileNames - names of files with start protocols
 fun getParticipantsList(fileNames: List<String>) =
@@ -34,7 +18,7 @@ fun getParticipantsList(fileNames: List<String>) =
 				lastName = args[2],
 				year = args[3].toInt(),
 				rank = SportRank.values().first { it.russianEquivalent == args[4] },
-				resultTime = parseTime(args[5]),
+				startTime = Time(args[5]),
 				organization = args[6],
 				group = group
 			)
@@ -86,7 +70,3 @@ fun createResultProtocol(participants: List<Participant>) {
 	}
 	logger.info { "Result protocol is created" }
 }
-
-
-fun timeDistance(time1: LocalTime, time2: LocalTime): LocalTime =
-	time1.minusHours(time2.hour.toLong()).minusMinutes(time2.minute.toLong()).minusSeconds(time2.second.toLong())

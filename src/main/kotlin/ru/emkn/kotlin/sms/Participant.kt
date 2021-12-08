@@ -1,7 +1,5 @@
 package ru.emkn.kotlin.sms
 
-import java.time.LocalTime
-
 data class Participant(
 	val firstName: String,
 	val lastName: String,
@@ -10,9 +8,9 @@ data class Participant(
 	val group: String,
 	val organization: String,
 	var number: Int = numberForParticipant,
-	var startTime: LocalTime = LocalTime.of(12, 0, 0),
+	var startTime: Time = Time(12, 0),
 	var passedPoints: List<PassedPoint> = emptyList(),
-	var resultTime: LocalTime? = null,
+	var resultTime: Time? = null,
 	var score: Int? = null
 ) {
 

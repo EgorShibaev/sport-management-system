@@ -1,8 +1,7 @@
 import ru.emkn.kotlin.sms.Group
 import ru.emkn.kotlin.sms.Participant
 import ru.emkn.kotlin.sms.SportRank
-import ru.emkn.kotlin.sms.protocols.creating.allSeconds
-import java.time.LocalTime
+import ru.emkn.kotlin.sms.Time
 import kotlin.test.*
 
 class TestDefiningTimeInGroup {
@@ -13,7 +12,7 @@ class TestDefiningTimeInGroup {
 		lastName = "a",
 		year = 1,
 		rank = SportRank.III,
-		startTime = LocalTime.of(12, 0, 0),
+		startTime = Time(12, 0),
 		organization = "a",
 		group = "M1"
 	)
@@ -23,7 +22,7 @@ class TestDefiningTimeInGroup {
 		lastName = "b",
 		year = 1,
 		rank = SportRank.III,
-		startTime = LocalTime.of(12, 0, 0),
+		startTime = Time(12, 0),
 		organization = "a",
 		group = "M1"
 	)
@@ -33,7 +32,7 @@ class TestDefiningTimeInGroup {
 		lastName = "c",
 		year = 1,
 		rank = SportRank.III,
-		startTime = LocalTime.of(12, 0, 0),
+		startTime = Time(12, 0),
 		organization = "a",
 		group = "M1"
 	)
@@ -45,9 +44,9 @@ class TestDefiningTimeInGroup {
 		group.defineTimeForParticipants()
 		assertEquals(
 			setOf(
-				LocalTime.of(12, 0),
-				LocalTime.of(12, 1),
-				LocalTime.of(12, 2),
+				Time(12, 0),
+				Time(12, 1),
+				Time(12, 2),
 			), setOf(part1.startTime, part2.startTime, part3.startTime)
 		)
 	}
@@ -61,7 +60,7 @@ class TestDefiningTimeInGroup {
 		val group = Group(parts, false)
 		group.defineTimeForParticipants()
 		assertEquals(
-			(0..99).map { 12 * 3600 + it * 60 }.toSet(), parts.map { it.startTime.allSeconds() }.toSet()
+			(0..99).map { 12 * 3600 + it * 60 }.toSet(), parts.map { it.startTime.allSecond }.toSet()
 		)
 	}
 }

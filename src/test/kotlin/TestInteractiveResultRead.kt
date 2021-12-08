@@ -1,9 +1,9 @@
 import ru.emkn.kotlin.sms.Participant
 import ru.emkn.kotlin.sms.PassedPoint
 import ru.emkn.kotlin.sms.SportRank
+import ru.emkn.kotlin.sms.Time
 import ru.emkn.kotlin.sms.protocols.creating.interactiveResultRead
 import java.io.ByteArrayInputStream
-import java.time.LocalTime
 import kotlin.test.*
 
 class TestInteractiveResultRead {
@@ -15,7 +15,7 @@ class TestInteractiveResultRead {
 		lastName = "a",
 		year = 1,
 		rank = SportRank.III,
-		startTime = LocalTime.of(12, 0, 0),
+		startTime = Time(12, 0),
 		organization = "a",
 		group = "M1"
 	)
@@ -25,7 +25,7 @@ class TestInteractiveResultRead {
 		lastName = "b",
 		year = 1,
 		rank = SportRank.III,
-		startTime = LocalTime.of(12, 0, 0),
+		startTime = Time(12, 0),
 		organization = "a",
 		group = "M1"
 	)
@@ -35,7 +35,7 @@ class TestInteractiveResultRead {
 		lastName = "c",
 		year = 1,
 		rank = SportRank.III,
-		startTime = LocalTime.of(12, 0, 0),
+		startTime = Time(12, 0),
 		organization = "a",
 		group = "M1"
 	)
@@ -51,16 +51,7 @@ class TestInteractiveResultRead {
 		val res = interactiveResultRead(listOf(part1))
 		assert(res.size == 1)
 		assertEquals(res[0], part1)
-		assertEquals(res[0].passedPoints, listOf(PassedPoint(2134, LocalTime.of(12, 0, 1))))
-	}
-
-	@Test
-	fun testTimeDecreasing() {
-		setInput("1\n2\n1\n12:02\n2\n12:01\nend")
-		val result = interactiveResultRead(listOf(part1))
-		assertEquals(result, listOf(part1))
-		assert(result[0].passedPoints == listOf<Pair<Int, LocalTime>>())
-		assert(result[0].resultTime == null)
+		assertEquals(res[0].passedPoints, listOf(PassedPoint(2134, Time(12, 0, 1))))
 	}
 
 	@Test
@@ -92,8 +83,8 @@ class TestInteractiveResultRead {
 		assertContentEquals(listOf(part1, part2, part3), res)
 		assert(res.all {
 			it.passedPoints == listOf(
-				PassedPoint(1, LocalTime.of(12, 2)),
-				PassedPoint(2, LocalTime.of(12, 5))
+				PassedPoint(1, Time(12, 2)),
+				PassedPoint(2, Time(12, 5))
 			)
 		})
 	}

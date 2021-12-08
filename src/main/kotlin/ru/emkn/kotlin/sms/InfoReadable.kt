@@ -1,9 +1,7 @@
 package ru.emkn.kotlin.sms
 
 import com.github.doyaaaaaken.kotlincsv.dsl.csvReader
-import ru.emkn.kotlin.sms.protocols.creating.parseTime
 import java.io.File
-
 
 data class ParticipantResult(val id: Int, val result: List<PassedPoint>)
 
@@ -28,7 +26,7 @@ object InteractiveRead : InfoReadable {
 			val passedPoints = mutableListOf<PassedPoint>()
 			repeat(count) {
 				val pointNumber = readLine()?.toIntOrNull() ?: throw IllegalArgumentException()
-				val time = parseTime(readLine() ?: throw IllegalArgumentException())
+				val time = Time(readLine() ?: throw IllegalArgumentException())
 				passedPoints.add(PassedPoint(pointNumber, time))
 			}
 			result.add(ParticipantResult(number, passedPoints))
@@ -46,7 +44,7 @@ class ReadFromFile(private val fileName: String) : InfoReadable {
 			val passedPoints = row.subList(1, row.size).chunked(2).map {
 				PassedPoint(
 					it[0].toIntOrNull() ?: throw IllegalArgumentException("Point number should be number"),
-					parseTime(it[1])
+					Time(it[1])
 				)
 			}
 			ParticipantResult(number, passedPoints)

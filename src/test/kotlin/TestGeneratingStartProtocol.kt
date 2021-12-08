@@ -1,7 +1,7 @@
 import ru.emkn.kotlin.sms.Group
 import ru.emkn.kotlin.sms.Participant
 import ru.emkn.kotlin.sms.SportRank
-import java.time.LocalTime
+import ru.emkn.kotlin.sms.Time
 import kotlin.test.*
 
 class TestGeneratingStartProtocol {
@@ -12,7 +12,7 @@ class TestGeneratingStartProtocol {
 		lastName = "a",
 		year = 1,
 		rank = SportRank.III,
-		startTime = LocalTime.of(12, 0, 0),
+		startTime = Time(12, 0, 0),
 		organization = "a",
 		group = "M1"
 	)
@@ -22,7 +22,7 @@ class TestGeneratingStartProtocol {
 		lastName = "b",
 		year = 1,
 		rank = SportRank.III,
-		startTime = LocalTime.of(12, 0, 0),
+		startTime = Time(12, 0),
 		organization = "b",
 		group = "M1"
 	)
@@ -32,7 +32,7 @@ class TestGeneratingStartProtocol {
 		lastName = "c",
 		year = 1,
 		rank = SportRank.III,
-		startTime = LocalTime.of(12, 0, 13),
+		startTime = Time(12, 0, 13),
 		organization = "c",
 		group = "M1"
 	)
