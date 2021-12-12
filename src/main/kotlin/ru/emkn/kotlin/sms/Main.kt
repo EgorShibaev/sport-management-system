@@ -1,87 +1,51 @@
 package ru.emkn.kotlin.sms
 
-import androidx.compose.foundation.BorderStroke
-import androidx.compose.foundation.background
-import androidx.compose.foundation.border
-import androidx.compose.foundation.layout.*
-import com.apurebase.arkenv.Arkenv
+import androidx.compose.foundation.layout.Column
+import androidx.compose.material.Tab
+import androidx.compose.material.TabRow
+import androidx.compose.material.Text
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.ui.unit.DpSize
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.window.Window
+import androidx.compose.ui.window.WindowState
+import androidx.compose.ui.window.application
 import com.apurebase.arkenv.util.argument
-import com.apurebase.arkenv.util.parse
 import com.github.doyaaaaaken.kotlincsv.dsl.csvReader
 import com.github.doyaaaaaken.kotlincsv.dsl.csvWriter
 import mu.KotlinLogging
 import ru.emkn.kotlin.sms.protocols.creating.*
+import ru.emkn.kotlin.sms.ui.Title
 import java.io.File
 import kotlin.random.Random
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.LazyRow
-import androidx.compose.foundation.lazy.items
-import androidx.compose.material.Button
-import androidx.compose.material.MaterialTheme
-import androidx.compose.material.Surface
-import androidx.compose.material.Text
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.ui.Alignment
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.unit.dp
-import androidx.compose.ui.window.Window
-import androidx.compose.ui.window.application
-import androidx.compose.ui.window.rememberWindowState
-import javax.swing.text.StyleConstants.Background
+import ru.emkn.kotlin.sms.ui.buffers
+import ru.emkn.kotlin.sms.ui.tabContent
 
 val logger = KotlinLogging.logger {}
 
-object Arguments {
-	val mode: String by argument()
-}
+fun main() = application {
+	val selectedTabIndex = remember { mutableStateOf(0) }
 
-var gui = application {
 	Window(
-		onCloseRequest = ::exitApplication,
-		title = "Compose for Desktop",
-		state = rememberWindowState(width = 300.dp, height = 300.dp)
+		state = WindowState(size = DpSize(350.dp, 500.dp)),
+		onCloseRequest = ::exitApplication
 	) {
-		MaterialTheme {
-			Column(Modifier.fillMaxSize(), Arrangement.spacedBy(0.dp)) {
-				Row (Modifier.fillMaxWidth()){
-					Surface(border = BorderStroke(1.dp, Color.LightGray)) {
-						Text("123")
-					}
+		Column {
+			TabRow(selectedTabIndex.value, tabs = {
+				Title.values().map { it.displayView }.forEachIndexed { index, title ->
+					Tab(
+						selected = index == selectedTabIndex.value,
+						onClick = { selectedTabIndex.value = index },
+						text = { Text(title) }
+					)
 				}
-
-				Row {
-					Text("321")
-				}
-			}
+			})
+			tabContent(buffers.getValue(Title.values()[selectedTabIndex.value]))
 		}
 	}
 }
 
-
-fun main(args: Array<String>) {
-//	creating result and writing it to file splits.csv
-//	createSplitResult(File("start-protocols").listFiles()!!.map { it.absoluteFile.toString() })
-
-	Arkenv.parse(Arguments, args)
-	try {
-		when (Arguments.mode.lowercase()) {
-			"start" -> start()
-			"result" -> result()
-			"orgresult" -> organizationsResult()
-			"all" -> {
-				start()
-				result()
-				organizationsResult()
-			}
-			else -> throw IllegalArgumentException("Unknown flag")
-		}
-	} catch (e: IllegalArgumentException) {
-		println(e.message)
-	}
-}
 /*
 sample-data/applications
 start-protocols
