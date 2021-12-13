@@ -1,9 +1,9 @@
 package ru.emkn.kotlin.sms
 
-import androidx.compose.foundation.BorderStroke
-import androidx.compose.foundation.background
-import androidx.compose.foundation.border
-import androidx.compose.foundation.layout.*
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.window.Window
+import androidx.compose.ui.window.application
+import androidx.compose.ui.window.rememberWindowState
 import com.apurebase.arkenv.Arkenv
 import com.apurebase.arkenv.util.argument
 import com.apurebase.arkenv.util.parse
@@ -13,24 +13,6 @@ import mu.KotlinLogging
 import ru.emkn.kotlin.sms.protocols.creating.*
 import java.io.File
 import kotlin.random.Random
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.LazyRow
-import androidx.compose.foundation.lazy.items
-import androidx.compose.material.Button
-import androidx.compose.material.MaterialTheme
-import androidx.compose.material.Surface
-import androidx.compose.material.Text
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.ui.Alignment
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.unit.dp
-import androidx.compose.ui.window.Window
-import androidx.compose.ui.window.application
-import androidx.compose.ui.window.rememberWindowState
-import javax.swing.text.StyleConstants.Background
 
 val logger = KotlinLogging.logger {}
 
@@ -38,32 +20,20 @@ object Arguments {
 	val mode: String by argument()
 }
 
-var gui = application {
+fun main() = application {
 	Window(
 		onCloseRequest = ::exitApplication,
-		title = "Compose for Desktop",
-		state = rememberWindowState(width = 300.dp, height = 300.dp)
+		title = "Scrollbars",
+		state = rememberWindowState(width = 250.dp, height = 400.dp)
 	) {
-		MaterialTheme {
-			Column(Modifier.fillMaxSize(), Arrangement.spacedBy(0.dp)) {
-				Row (Modifier.fillMaxWidth()){
-					Surface(border = BorderStroke(1.dp, Color.LightGray)) {
-						Text("123")
-					}
-				}
-
-				Row {
-					Text("321")
-				}
-			}
-		}
+		LazyScrollable()
 	}
 }
 
-
-fun main(args: Array<String>) {
+/*(args: Array<String>) {
 //	creating result and writing it to file splits.csv
 //	createSplitResult(File("start-protocols").listFiles()!!.map { it.absoluteFile.toString() })
+
 
 	Arkenv.parse(Arguments, args)
 	try {
@@ -81,7 +51,7 @@ fun main(args: Array<String>) {
 	} catch (e: IllegalArgumentException) {
 		println(e.message)
 	}
-}
+}*/
 /*
 sample-data/applications
 start-protocols

@@ -9,8 +9,8 @@ version = '1.0-SNAPSHOT'
 
 repositories {
     mavenCentral()
+    google()
 }
-
 dependencies {
 
     implementation "com.apurebase:arkenv:3.3.3"
