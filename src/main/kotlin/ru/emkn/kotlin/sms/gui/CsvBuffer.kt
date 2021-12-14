@@ -1,14 +1,13 @@
-package ru.emkn.kotlin.sms.ui
+package ru.emkn.kotlin.sms.gui
 
 import com.github.doyaaaaaken.kotlincsv.dsl.csvReader
 import com.github.doyaaaaaken.kotlincsv.dsl.csvWriter
-import ru.emkn.kotlin.sms.logger
 import java.io.File
 
-class CsvBuffer(val fileName: String) {
+class CsvBuffer(private val fileName: String, val title: Title) {
 	var content: List<MutableList<String>>? = null
 
-	fun export() {
+	fun import() {
 		content = csvReader().readAll(File(fileName)).map { it.toMutableList() }
 	}
 
@@ -19,9 +18,7 @@ class CsvBuffer(val fileName: String) {
 	}
 
 	fun amend(row: Int, column: Int, newValue: String) {
-		logger.error { "$fileName $row $column $newValue" }
 		content?.get(row)?.set(column, newValue) ?: throw IllegalArgumentException("Wrong index")
-		logger.error(content?.get(row)?.get(column))
 	}
 
 	operator fun get(index: Int) = content?.get(index) ?: throw IllegalArgumentException("Wrong index")
