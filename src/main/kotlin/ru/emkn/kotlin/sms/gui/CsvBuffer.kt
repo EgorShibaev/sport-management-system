@@ -4,7 +4,7 @@ import com.github.doyaaaaaken.kotlincsv.dsl.csvReader
 import com.github.doyaaaaaken.kotlincsv.dsl.csvWriter
 import java.io.File
 
-class CsvBuffer(private val fileName: String, val title: Title) {
+data class CsvBuffer(private val fileName: String, val title: Title) {
 	var content: List<MutableList<String>>? = null
 
 	fun filteredContent(): List<MutableList<String>>?  {
@@ -36,4 +36,25 @@ class CsvBuffer(private val fileName: String, val title: Title) {
 
 	operator fun get(index: Int) = content?.get(index) ?: throw IllegalArgumentException("Wrong index")
 
+	override fun hashCode(): Int {
+		var result = fileName.hashCode()
+		result = 31 * result + title.hashCode()
+		result = 31 * result + (content?.hashCode() ?: 0)
+		result = 31 * result + (filters?.hashCode() ?: 0)
+		return result
+	}
+
+	override fun equals(other: Any?): Boolean {
+		if (this === other) return true
+		if (javaClass != other?.javaClass) return false
+
+		other as CsvBuffer
+
+		if (fileName != other.fileName) return false
+		if (title != other.title) return false
+		if (content != other.content) return false
+		if (filters != other.filters) return false
+
+		return true
+	}
 }

@@ -6,7 +6,6 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.width
 import androidx.compose.material.*
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
@@ -20,29 +19,67 @@ enum class Title(val displayView: String) {
 	RESULT("Result"), ORG_RESULT("Organization results")
 }
 
-val fileNames = mapOf(
-	Title.APPLIES to File("sample-data/applications").listFiles()!!.map { it.absoluteFile.toString() },
-	Title.START_PROTOCOLS to File("start-protocols").listFiles()!!.map { it.absoluteFile.toString() },
-	Title.SPLITS to listOf("sample-data/splits.csv"),
-	Title.RESULT to listOf("result/result.csv"),
-	Title.ORG_RESULT to listOf("result/organizationsResult.csv")
+val filesLocation = mutableMapOf(
+	Title.APPLIES to "sample-data/applications",
+	Title.START_PROTOCOLS to "start-protocols",
+	Title.SPLITS to "sample-data/splits.csv",
+	Title.RESULT to "result/result.csv",
+	Title.ORG_RESULT to "result/organizationsResult.csv"
 )
 
-val buffers = fileNames.map {
-	Pair(it.key, it.value.map { name -> CsvBuffer(name, it.key) })
-}.toMap()
+fun getFileNames(title: Title): List<String> {
+	val location = filesLocation.getValue(title)
+	return when (title) {
+		Title.APPLIES -> File(location).listFiles()!!.map { it.absoluteFile.toString() }
+		Title.START_PROTOCOLS -> File(location).listFiles()!!.map { it.absoluteFile.toString() }
+		Title.SPLITS -> listOf(location)
+		Title.RESULT -> listOf(location)
+		Title.ORG_RESULT -> listOf(location)
+	}
+}
+
+fun updatedBuffers() = Title.values().associateWith {
+	getFileNames(it).map { name -> CsvBuffer(name, it) }
+}
+
+var buffers = updatedBuffers()
+
+val buffersHash = mutableStateOf(buffers.hashCode())
+
+fun updateBuffersHash() {
+	buffersHash.value = buffers.hashCode()
+}
+
+@Composable
+fun fileSetter(title: Title) {
+	val location = remember { mutableStateOf("") }
+	location.value = filesLocation.getValue(title)
+
+	Row {
+		TextField(
+			value = location.value,
+			onValueChange = {
+				location.value = it
+				filesLocation[title] = it
+			},
+			singleLine = true
+		)
+		Button(
+			onClick = {
+				buffers = updatedBuffers()
+				updateBuffersHash()
+			}
+		) { Text("Select file") }
+	}
+}
 
 @Composable
 fun tabContent(buffers: List<CsvBuffer>) {
 	val indexOfFile = remember { mutableStateOf(0) }
 	if (indexOfFile.value !in buffers.indices)
 		indexOfFile.value = 0
-	val redrawing = remember { mutableStateOf(true) }
-	// variable which is changed when redrawing of table is necessary
-	// value of this variable is given to table function so when variable change table is redrawing
-	// (as I understand table redraws only when some mutable state will change)
 	Column {
-		buttons(buffers, redrawing)
+		buttons(buffers)
 		TabRow(indexOfFile.value, tabs = {
 			buffers.forEachIndexed { index, _ ->
 				Tab(
@@ -52,18 +89,18 @@ fun tabContent(buffers: List<CsvBuffer>) {
 				)
 			}
 		})
-		table(buffers[indexOfFile.value.also { redrawing.value }], redrawing)
-		// .also { ... } is necessary because table() should depend on this variable
+		table(buffers[indexOfFile.value])
 	}
 }
 
 @Composable
-private fun buttons(buffers: List<CsvBuffer>, redrawing: MutableState<Boolean>) {
+private fun buttons(buffers: List<CsvBuffer>) {
 	Row {
 		Spacer(Modifier.width(5.dp))
 		Button(
 			onClick = {
 				buffers.forEach { it.save() }
+				updateBuffersHash()
 			},
 			content = {
 				Text("Save")
@@ -72,8 +109,8 @@ private fun buttons(buffers: List<CsvBuffer>, redrawing: MutableState<Boolean>) 
 		Spacer(Modifier.width(5.dp))
 		Button(
 			onClick = {
-				redrawing.value = !redrawing.value
 				buffers.forEach { it.import() }
+				updateBuffersHash()
 			},
 			content = {
 				Text("Import")

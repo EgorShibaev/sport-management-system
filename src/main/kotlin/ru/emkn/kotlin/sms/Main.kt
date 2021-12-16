@@ -14,11 +14,9 @@ import androidx.compose.ui.window.application
 import com.github.doyaaaaaken.kotlincsv.dsl.csvReader
 import com.github.doyaaaaaken.kotlincsv.dsl.csvWriter
 import mu.KotlinLogging
-import ru.emkn.kotlin.sms.gui.Title
+import ru.emkn.kotlin.sms.gui.*
 import java.io.File
 import kotlin.random.Random
-import ru.emkn.kotlin.sms.gui.buffers
-import ru.emkn.kotlin.sms.gui.tabContent
 
 val logger = KotlinLogging.logger {}
 
@@ -39,7 +37,10 @@ fun main() = application {
 					)
 				}
 			})
-			tabContent(buffers.getValue(Title.values()[selectedTabIndex.value]))
+			val title = Title.values()[selectedTabIndex.value]
+			fileSetter(title)
+			tabContent(buffers.getValue(title).also { buffersHash.value })
+			// also is necessary because this function should be redrawn when buffer is changed
 		}
 	}
 }
