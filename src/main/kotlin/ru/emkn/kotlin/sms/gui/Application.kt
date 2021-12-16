@@ -37,8 +37,12 @@ fun tabContent(buffers: List<CsvBuffer>) {
 	val indexOfFile = remember { mutableStateOf(0) }
 	if (indexOfFile.value !in buffers.indices)
 		indexOfFile.value = 0
+	val redrawing = remember { mutableStateOf(true) }
+	// variable which is changed when redrawing of table is necessary
+	// value of this variable is given to table function so when variable change table is redrawing
+	// (as I understand table redraws only when some mutable state will change)
 	Column {
-		buttons(buffers, indexOfFile)
+		buttons(buffers, redrawing)
 		TabRow(indexOfFile.value, tabs = {
 			buffers.forEachIndexed { index, _ ->
 				Tab(
@@ -48,12 +52,13 @@ fun tabContent(buffers: List<CsvBuffer>) {
 				)
 			}
 		})
-		table(buffers[indexOfFile.value])
+		table(buffers[indexOfFile.value.also { redrawing.value }], redrawing)
+		// .also { ... } is necessary because table() should depend on this variable
 	}
 }
 
 @Composable
-private fun buttons(buffers: List<CsvBuffer>, indexOfFile: MutableState<Int>) {
+private fun buttons(buffers: List<CsvBuffer>, redrawing: MutableState<Boolean>) {
 	Row {
 		Spacer(Modifier.width(5.dp))
 		Button(
@@ -67,10 +72,7 @@ private fun buttons(buffers: List<CsvBuffer>, indexOfFile: MutableState<Int>) {
 		Spacer(Modifier.width(5.dp))
 		Button(
 			onClick = {
-				indexOfFile.value++
-				indexOfFile.value--
-				// table should be repainted when this button is pressed
-				// but table is repainted only when MutableState is changed
+				redrawing.value = !redrawing.value
 				buffers.forEach { it.import() }
 			},
 			content = {
