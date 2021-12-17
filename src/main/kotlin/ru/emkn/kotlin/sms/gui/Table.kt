@@ -12,6 +12,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import ru.emkn.kotlin.sms.buttonsColor
 
 @Composable
 fun table(buffer: CsvBuffer) {
@@ -20,25 +21,26 @@ fun table(buffer: CsvBuffer) {
 		modifier = Modifier.fillMaxSize().horizontalScroll(state).padding(end = 12.dp, bottom = 12.dp)
 	) {
 		buffer.filteredContent()?.let {
-			LazyColumn(Modifier.padding(5.dp)) {
-				item {
-					filters(buffer)
-				}
-				it.forEachIndexed { rowIndex, row ->
-					item {
-						Row {
-							row.forEachIndexed { columnIndex, field ->
-								val text = remember { mutableStateOf(field) }
-								text.value = field
-								TextField(
-									onValueChange = {
-										buffer.amend(rowIndex, columnIndex, it)
-										text.value = it
-									},
-									value = text.value,
-									singleLine = true,
-									modifier = Modifier.border(.1.dp, Color.Blue).width(120.dp),
-								)
+			Column {
+				filters(buffer)
+				LazyColumn(Modifier.padding(5.dp)) {
+					it.forEachIndexed { rowIndex, row ->
+						item {
+							Row {
+								row.forEachIndexed { columnIndex, field ->
+									val text = remember { mutableStateOf(field) }
+									text.value = field
+									TextField(
+										onValueChange = {
+											buffer.amend(rowIndex, columnIndex, it)
+											text.value = it
+										},
+										value = text.value,
+										singleLine = true,
+										modifier = Modifier.width(120.dp),
+									)
+									Spacer(Modifier.width(5.dp))
+								}
 							}
 						}
 					}
@@ -63,7 +65,7 @@ private fun filters(buffer: CsvBuffer) {
 				value = text.value,
 				singleLine = true,
 				modifier = Modifier.width(85.dp).padding(1.dp),
-				textStyle = TextStyle(fontSize = 10.sp)
+				textStyle = TextStyle(fontSize = 10.sp),
 			)
 			val isFilterAvailable = remember { mutableStateOf(state) }
 			isFilterAvailable.value = state
@@ -77,9 +79,10 @@ private fun filters(buffer: CsvBuffer) {
 				modifier = Modifier.width(35.dp).padding(1.dp),
 				contentPadding = PaddingValues(0.dp),
 				colors = ButtonDefaults.buttonColors(
-					backgroundColor = if (isFilterAvailable.value) Color.Green else Color.Blue
+					backgroundColor = if (isFilterAvailable.value) buttonsColor else Color(0Xff0e544f)
 				)
 			)
+			Spacer(Modifier.width(5.dp))
 		}
 	}
 }

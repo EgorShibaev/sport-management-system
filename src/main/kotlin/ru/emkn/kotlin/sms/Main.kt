@@ -1,11 +1,15 @@
 package ru.emkn.kotlin.sms
 
+import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Column
 import androidx.compose.material.Tab
 import androidx.compose.material.TabRow
 import androidx.compose.material.Text
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Window
@@ -20,23 +24,29 @@ import kotlin.random.Random
 
 val logger = KotlinLogging.logger {}
 
+val buttonsColor = Color(0XFF1e847f)
+
 fun main() = application {
 	val selectedTabIndex = remember { mutableStateOf(0) }
 
 	Window(
-		state = WindowState(size = DpSize(350.dp, 500.dp)),
+		state = WindowState(size = DpSize(1000.dp, 500.dp)),
 		onCloseRequest = ::exitApplication
 	) {
-		Column {
-			TabRow(selectedTabIndex.value, tabs = {
-				Title.values().map { it.displayView }.forEachIndexed { index, title ->
-					Tab(
-						selected = index == selectedTabIndex.value,
-						onClick = { selectedTabIndex.value = index },
-						text = { Text(title) }
-					)
-				}
-			})
+		Column(modifier = Modifier.background(Color(0Xffecc19c))) {
+			TabRow(
+				selectedTabIndex.value, tabs = {
+					Title.values().map { it.displayView }.forEachIndexed { index, title ->
+						Tab(
+							selected = index == selectedTabIndex.value,
+							onClick = { selectedTabIndex.value = index },
+							text = { Text(title) }
+						)
+					}
+				},
+				backgroundColor = buttonsColor,
+				modifier = Modifier.border(1.dp, Color.Black)
+			)
 			val title = Title.values()[selectedTabIndex.value]
 			fileSetter(title)
 			tabContent(buffers.getValue(title).also { buffersHash.value })
