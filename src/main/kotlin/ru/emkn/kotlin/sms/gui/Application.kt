@@ -18,8 +18,8 @@ import ru.emkn.kotlin.sms.protocols.creating.*
 import java.io.File
 
 enum class Title(val displayView: String) {
-	APPLIES("Applies"), START_PROTOCOLS("Start protocols"), SPLITS("Splits"),
-	RESULT("Result"), ORG_RESULT("Organization results")
+	APPLIES("Applies"), START_PROTOCOLS("Start protocols"), COURSES("Courses"),
+	SPLITS("Splits"), RESULT("Result"), ORG_RESULT("Organization results")
 }
 
 val filesLocation = mutableMapOf(
@@ -27,14 +27,18 @@ val filesLocation = mutableMapOf(
 	Title.START_PROTOCOLS to "start-protocols",
 	Title.SPLITS to "sample-data/splits.csv",
 	Title.RESULT to "result/result.csv",
-	Title.ORG_RESULT to "result/organizationsResult.csv"
+	Title.ORG_RESULT to "result/organizationsResult.csv",
+	Title.COURSES to "sample-data/courses"
 )
 
 fun getFileNames(title: Title): List<String> {
+	fun listOfFileInDirectory(dir: String) = File(dir).listFiles()!!.map { it.absoluteFile.toString() }
+
 	val location = filesLocation.getValue(title)
 	return when (title) {
-		Title.APPLIES -> File(location).listFiles()!!.map { it.absoluteFile.toString() }
-		Title.START_PROTOCOLS -> File(location).listFiles()!!.map { it.absoluteFile.toString() }
+		Title.COURSES -> listOfFileInDirectory(location)
+		Title.APPLIES -> listOfFileInDirectory(location)
+		Title.START_PROTOCOLS -> listOfFileInDirectory(location)
 		Title.SPLITS -> listOf(location)
 		Title.RESULT -> listOf(location)
 		Title.ORG_RESULT -> listOf(location)
