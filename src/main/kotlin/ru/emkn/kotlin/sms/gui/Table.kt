@@ -24,7 +24,7 @@ fun table(buffer: CsvBuffer) {
 			Column {
 				filters(buffer)
 				LazyColumn(Modifier.padding(5.dp)) {
-					it.forEachIndexed { rowIndex, row ->
+					it.forEach { (rowIndex, row) ->
 						item {
 							Row {
 								row.forEachIndexed { columnIndex, field ->
@@ -41,6 +41,16 @@ fun table(buffer: CsvBuffer) {
 									)
 									Spacer(Modifier.width(5.dp))
 								}
+								val a = remember { mutableStateOf(false) }
+								a.value = buffer.checkBoxes?.get(rowIndex) ?: throw IllegalStateException()
+								Checkbox(
+									checked = a.value,
+									onCheckedChange = {
+										a.value = !a.value
+										buffer.checkBoxes?.set(rowIndex, a.value)
+									},
+									colors = CheckboxDefaults.colors(checkedColor = buttonsColor)
+								)
 							}
 						}
 					}
@@ -83,6 +93,29 @@ private fun filters(buffer: CsvBuffer) {
 				)
 			)
 			Spacer(Modifier.width(5.dp))
+		}
+		Column {
+			Button(
+				modifier = Modifier.height(25.dp),
+				onClick = {
+					buffer.deleteLines()
+					updateBuffersHash()
+				},
+				contentPadding = PaddingValues(0.dp),
+				colors = ButtonDefaults.buttonColors(buttonsColor)
+			) { Text(" Delete ", fontSize = 10.sp) }
+
+			Spacer(Modifier.height(5.dp))
+
+			Button(
+				modifier = Modifier.height(25.dp),
+				onClick = {
+					buffer.addEmptyLines()
+					updateBuffersHash()
+				},
+				contentPadding = PaddingValues(0.dp),
+				colors = ButtonDefaults.buttonColors(buttonsColor)
+			) { Text("Add line", fontSize = 10.sp) }
 		}
 	}
 }
