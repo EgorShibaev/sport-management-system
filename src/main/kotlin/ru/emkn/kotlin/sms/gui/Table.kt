@@ -27,8 +27,33 @@ fun table(buffer: Buffer) {
 					it.forEach { (rowIndex, row) ->
 						item {
 							if (buffer.isWritable) {
-								buffer as CsvBuffer
-								editableBufferRow(row, buffer, rowIndex)
+								Row {
+									row.forEachIndexed { columnIndex, field ->
+										val text = remember { mutableStateOf(field) }
+										text.value = (buffer as CsvBuffer).content?.get(rowIndex)?.get(columnIndex) ?: ""
+										TextField(
+											onValueChange = {
+												buffer.amend(rowIndex, columnIndex, it)
+												text.value = it
+											},
+											value = text.value,
+											singleLine = true,
+											modifier = Modifier.width(120.dp),
+										)
+										Spacer(Modifier.width(5.dp))
+									}
+									val checkBoxState = remember { mutableStateOf(false) }
+									checkBoxState.value =
+										(buffer as CsvBuffer).checkBoxes?.get(rowIndex) ?: throw IllegalStateException()
+									Checkbox(
+										checked = checkBoxState.value,
+										onCheckedChange = {
+											checkBoxState.value = !checkBoxState.value
+											buffer.checkBoxes?.set(rowIndex, checkBoxState.value)
+										},
+										colors = CheckboxDefaults.colors(checkedColor = buttonsColor)
+									)
+								}
 							} else {
 								buffer as ReadOnlyBuffer
 								readableOnlyBufferRow(row, buffer)
@@ -38,40 +63,6 @@ fun table(buffer: Buffer) {
 				}
 			}
 		}
-	}
-}
-
-@Composable
-private fun editableBufferRow(
-	row: List<String>,
-	buffer: CsvBuffer,
-	rowIndex: Int
-) {
-	Row {
-		row.forEachIndexed { columnIndex, field ->
-			val text = remember { mutableStateOf(field) }
-			text.value = field
-			TextField(
-				onValueChange = {
-					buffer.amend(rowIndex, columnIndex, it)
-					text.value = it
-				},
-				value = text.value,
-				singleLine = true,
-				modifier = Modifier.width(120.dp),
-			)
-			Spacer(Modifier.width(5.dp))
-		}
-		val a = remember { mutableStateOf(false) }
-		a.value = buffer.checkBoxes?.get(rowIndex) ?: throw IllegalStateException()
-		Checkbox(
-			checked = a.value,
-			onCheckedChange = {
-				a.value = !a.value
-				buffer.checkBoxes?.set(rowIndex, a.value)
-			},
-			colors = CheckboxDefaults.colors(checkedColor = buttonsColor)
-		)
 	}
 }
 

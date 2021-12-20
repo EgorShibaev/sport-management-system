@@ -54,7 +54,7 @@ abstract class Buffer(val title: Title, val isWritable: Boolean) {
 }
 
 class CsvBuffer(private val fileName: String, title: Title) : Buffer(title, true) {
-	private var content: MutableList<MutableList<String>>? = null
+	var content: MutableList<MutableList<String>>? = null
 
 	override fun content(): List<List<String>> {
 		content?.let {
