@@ -12,14 +12,15 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import ru.emkn.kotlin.sms.Participant
 import ru.emkn.kotlin.sms.buttonsColor
 import ru.emkn.kotlin.sms.protocols.creating.*
 import java.io.File
 
 enum class Title(val displayView: String) {
-	APPLIES("Applies"), START_PROTOCOLS("Start protocols"), COURSES("Courses"),
-	SPLITS("Splits"), RESULT("Result"), ORG_RESULT("Organization results")
+	PARTICIPANTS("Participants"), APPLIES("Applies"), START_PROTOCOLS("Start protocols"),
+	COURSES("Courses"), SPLITS("Splits"), RESULT("Result"), ORG_RESULT("Organization results"),
 }
 
 val filesLocation = mutableMapOf(
@@ -27,8 +28,9 @@ val filesLocation = mutableMapOf(
 	Title.START_PROTOCOLS to "start-protocols",
 	Title.SPLITS to "sample-data/splits.csv",
 	Title.RESULT to "result/result.csv",
-	Title.ORG_RESULT to "result/organizationsResult.csv",
-	Title.COURSES to "sample-data/courses"
+	Title.ORG_RESULT to "result/result.csv",
+	Title.COURSES to "sample-data/courses",
+	Title.PARTICIPANTS to "sample-data/applications"
 )
 
 fun getFileNames(title: Title): List<String> {
@@ -42,11 +44,18 @@ fun getFileNames(title: Title): List<String> {
 		Title.SPLITS -> listOf(location)
 		Title.RESULT -> listOf(location)
 		Title.ORG_RESULT -> listOf(location)
+		Title.PARTICIPANTS -> listOfFileInDirectory(location)
 	}
 }
 
 fun updatedBuffers() = Title.values().associateWith {
-	getFileNames(it).map { name -> CsvBuffer(name, it) }
+	when (it) {
+		Title.COURSES, Title.SPLITS, Title.APPLIES, Title.START_PROTOCOLS ->
+			getFileNames(it).map { name -> CsvBuffer(name, it) }
+		Title.PARTICIPANTS -> listOf(ParticipantsBuffer.apply { files = getFileNames(it) })
+		Title.RESULT -> ResultBuffer.getBuffers(getFileNames(it).first())
+		Title.ORG_RESULT -> OrgResultBuffer.getBuffers(getFileNames(it).first())
+	}
 }
 
 var buffers = updatedBuffers()
@@ -85,7 +94,7 @@ fun fileSetter(title: Title) {
 }
 
 @Composable
-fun tabContent(buffers: List<CsvBuffer>) {
+fun tabContent(buffers: List<Buffer>) {
 	val indexOfFile = remember { mutableStateOf(0) }
 	if (indexOfFile.value !in buffers.indices)
 		indexOfFile.value = 0
@@ -97,7 +106,14 @@ fun tabContent(buffers: List<CsvBuffer>) {
 					Tab(
 						selected = index == indexOfFile.value,
 						onClick = { indexOfFile.value = index },
-						text = { Text((index + 1).toString()) },
+						text = {
+							when {
+								buffers[index] is ResultBuffer -> Text((buffers[index] as ResultBuffer).groupName)
+								buffers[index] is OrgResultBuffer ->
+									Text((buffers[index] as OrgResultBuffer).organizationName, fontSize = 10.sp)
+								else -> Text((index + 1).toString())
+							}
+						},
 					)
 				}
 			},
@@ -109,19 +125,21 @@ fun tabContent(buffers: List<CsvBuffer>) {
 }
 
 @Composable
-private fun buttons(buffers: List<CsvBuffer>) {
+private fun buttons(buffers: List<Buffer>) {
 	Row {
-		Spacer(Modifier.width(5.dp))
-		Button(
-			onClick = {
-				buffers.forEach { it.save() }
-				updateBuffersHash()
-			},
-			content = {
-				Text("Save")
-			},
-			colors = ButtonDefaults.buttonColors(backgroundColor = buttonsColor)
-		)
+		if (buffers.all { it.isWritable }) {
+			Spacer(Modifier.width(5.dp))
+			Button(
+				onClick = {
+					buffers.forEach { (it as CsvBuffer).save() }
+					updateBuffersHash()
+				},
+				content = {
+					Text("Save")
+				},
+				colors = ButtonDefaults.buttonColors(backgroundColor = buttonsColor)
+			)
+		}
 		Spacer(Modifier.width(5.dp))
 		Button(
 			onClick = {

@@ -3,7 +3,7 @@ package ru.emkn.kotlin.sms
 import java.util.*
 
 class Group(
-	private val participants: MutableList<Participant>,
+	val participants: MutableList<Participant>,
 	areResultsReady: Boolean
 ) {
 	val name: String

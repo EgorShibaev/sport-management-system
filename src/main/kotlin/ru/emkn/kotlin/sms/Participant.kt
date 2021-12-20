@@ -11,7 +11,8 @@ data class Participant(
 	var startTime: Time = Time(12, 0),
 	var passedPoints: List<PassedPoint> = emptyList(),
 	var resultTime: Time? = null,
-	var score: Int? = null
+	var score: Int? = null,
+	var place: Int? = null
 ) {
 
 	companion object {

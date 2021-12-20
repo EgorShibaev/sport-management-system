@@ -2,17 +2,22 @@ package ru.emkn.kotlin.sms.gui
 
 import com.github.doyaaaaaken.kotlincsv.dsl.csvReader
 import com.github.doyaaaaaken.kotlincsv.dsl.csvWriter
+import ru.emkn.kotlin.sms.Participant
 import ru.emkn.kotlin.sms.logger
+import ru.emkn.kotlin.sms.protocols.creating.getGroups
+import ru.emkn.kotlin.sms.protocols.creating.parseResultFile
 import java.io.File
 
-data class CsvBuffer(private val fileName: String, val title: Title) {
-	var content: MutableList<MutableList<String>>? = null
+data class Row(val index: Int, val content: List<String>)
 
-	data class Row(val index: Int, val content: List<String>)
+data class FilterState(val content: String, val state: Boolean)
+
+abstract class Buffer(val title: Title, val isWritable: Boolean) {
+	abstract fun content(): List<List<String>>
 
 	fun filteredContent(): List<Row>? {
 		val filters = filters ?: return null
-		return content?.mapIndexed { index, row -> Row(index, row) }?.filter { row ->
+		return content().mapIndexed { index, row -> Row(index, row) }.filter { row ->
 			filters.withIndex().all {
 				try {
 					val regex = it.value.content.toRegex()
@@ -25,13 +30,42 @@ data class CsvBuffer(private val fileName: String, val title: Title) {
 		}
 	}
 
-	data class FilterState(val content: String, val state: Boolean)
-
 	var filters: MutableList<FilterState>? = null
+
+	abstract fun import()
+
+	override fun equals(other: Any?): Boolean {
+		if (this === other) return true
+		if (javaClass != other?.javaClass) return false
+
+		other as Buffer
+
+		if (filters != other.filters) return false
+		if (content() != other.content()) return false
+
+		return true
+	}
+
+	override fun hashCode(): Int {
+		return (filters?.hashCode() ?: 0) * 31 + content().hashCode()
+	}
+
+
+}
+
+class CsvBuffer(private val fileName: String, title: Title) : Buffer(title, true) {
+	private var content: MutableList<MutableList<String>>? = null
+
+	override fun content(): List<List<String>> {
+		content?.let {
+			return it.map { row -> row.toList() }.toList()
+		}
+		throw IllegalStateException()
+	}
 
 	var checkBoxes: MutableList<Boolean>? = null
 
-	fun import() {
+	override fun import() {
 		content = csvReader().readAll(File(fileName)).map { it.toMutableList() }.toMutableList()
 		val size = content?.first()?.size ?: throw IllegalStateException()
 		filters = MutableList(size) { FilterState("", false) }
@@ -67,8 +101,6 @@ data class CsvBuffer(private val fileName: String, val title: Title) {
 		}
 	}
 
-	operator fun get(index: Int) = content?.get(index) ?: throw IllegalArgumentException("Wrong index")
-
 	override fun hashCode(): Int {
 		var result = fileName.hashCode()
 		result = 31 * result + title.hashCode()
@@ -89,5 +121,97 @@ data class CsvBuffer(private val fileName: String, val title: Title) {
 		if (filters != other.filters) return false
 
 		return true
+	}
+}
+
+abstract class ReadOnlyBuffer(title: Title) : Buffer(title, false) {
+
+	var content: List<Participant>? = null
+
+	abstract val headers: List<String>
+}
+
+object ParticipantsBuffer : ReadOnlyBuffer(Title.PARTICIPANTS) {
+
+	var files: List<String> = emptyList()
+
+	override val headers = listOf("Number", "First name", "Last name", "Year", "Rank", "Group", "Organization")
+
+	override fun content(): List<List<String>> {
+		return content?.map {
+			listOf(
+				it.number.toString(),
+				it.firstName,
+				it.lastName,
+				it.year.toString(),
+				it.rank.russianEquivalent,
+				it.group,
+				it.organization
+			)
+		} ?: emptyList()
+	}
+
+	override fun import() {
+		ParticipantsBuffer.content = getGroups(files).map { it.participants }.flatten()
+		filters = MutableList(headers.size) { FilterState("", false) }
+	}
+}
+
+class ResultBuffer(val groupName: String, var fileName: String) : ReadOnlyBuffer(Title.RESULT) {
+	override val headers = listOf("Number", "First name", "Last name", "Year", "Rank", "Organization", "Time", "Place")
+
+	override fun import() {
+		content = parseResultFile(fileName).filter { it.group == groupName }
+		filters = MutableList(headers.size) { FilterState("", false) }
+	}
+
+
+	override fun content(): List<List<String>> {
+		return content?.map {
+			listOf(
+				it.number.toString(),
+				it.firstName,
+				it.lastName,
+				it.year.toString(),
+				it.rank.russianEquivalent,
+				it.organization,
+				it.resultTime?.toString() ?: "снят",
+				it.place.toString()
+			)
+		} ?: emptyList()
+	}
+
+	companion object {
+		fun getBuffers(fileName: String) =
+			parseResultFile(fileName).map { it.group }.toSet().map { ResultBuffer(it, fileName) }
+	}
+}
+
+class OrgResultBuffer(val organizationName: String, var fileName: String) : ReadOnlyBuffer(Title.ORG_RESULT) {
+	override fun import() {
+		content = parseResultFile(fileName).filter { it.organization == organizationName }
+		filters = MutableList(headers.size) { FilterState("", false) }
+	}
+
+	override val headers = listOf("Number", "First name", "Last name", "Year", "Rank", "Group", "Time", "Score")
+
+	override fun content(): List<List<String>> {
+		return content?.map {
+			listOf(
+				it.number.toString(),
+				it.firstName,
+				it.lastName,
+				it.year.toString(),
+				it.rank.russianEquivalent,
+				it.group,
+				it.resultTime?.toString() ?: "снят",
+				it.score.toString()
+			)
+		} ?: emptyList()
+	}
+
+	companion object {
+		fun getBuffers(fileName: String) =
+			parseResultFile(fileName).map { it.organization }.toSet().map { OrgResultBuffer(it, fileName) }
 	}
 }

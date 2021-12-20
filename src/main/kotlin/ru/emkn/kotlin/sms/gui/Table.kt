@@ -15,7 +15,7 @@ import androidx.compose.ui.unit.sp
 import ru.emkn.kotlin.sms.buttonsColor
 
 @Composable
-fun table(buffer: CsvBuffer) {
+fun table(buffer: Buffer) {
 	val state = rememberScrollState(0)
 	Box(
 		modifier = Modifier.fillMaxSize().horizontalScroll(state).padding(end = 12.dp, bottom = 12.dp)
@@ -26,31 +26,12 @@ fun table(buffer: CsvBuffer) {
 				LazyColumn(Modifier.padding(5.dp)) {
 					it.forEach { (rowIndex, row) ->
 						item {
-							Row {
-								row.forEachIndexed { columnIndex, field ->
-									val text = remember { mutableStateOf(field) }
-									text.value = field
-									TextField(
-										onValueChange = {
-											buffer.amend(rowIndex, columnIndex, it)
-											text.value = it
-										},
-										value = text.value,
-										singleLine = true,
-										modifier = Modifier.width(120.dp),
-									)
-									Spacer(Modifier.width(5.dp))
-								}
-								val a = remember { mutableStateOf(false) }
-								a.value = buffer.checkBoxes?.get(rowIndex) ?: throw IllegalStateException()
-								Checkbox(
-									checked = a.value,
-									onCheckedChange = {
-										a.value = !a.value
-										buffer.checkBoxes?.set(rowIndex, a.value)
-									},
-									colors = CheckboxDefaults.colors(checkedColor = buttonsColor)
-								)
+							if (buffer.isWritable) {
+								buffer as CsvBuffer
+								editableBufferRow(row, buffer, rowIndex)
+							} else {
+								buffer as ReadOnlyBuffer
+								readableOnlyBufferRow(row, buffer)
 							}
 						}
 					}
@@ -61,7 +42,61 @@ fun table(buffer: CsvBuffer) {
 }
 
 @Composable
-private fun filters(buffer: CsvBuffer) {
+private fun editableBufferRow(
+	row: List<String>,
+	buffer: CsvBuffer,
+	rowIndex: Int
+) {
+	Row {
+		row.forEachIndexed { columnIndex, field ->
+			val text = remember { mutableStateOf(field) }
+			text.value = field
+			TextField(
+				onValueChange = {
+					buffer.amend(rowIndex, columnIndex, it)
+					text.value = it
+				},
+				value = text.value,
+				singleLine = true,
+				modifier = Modifier.width(120.dp),
+			)
+			Spacer(Modifier.width(5.dp))
+		}
+		val a = remember { mutableStateOf(false) }
+		a.value = buffer.checkBoxes?.get(rowIndex) ?: throw IllegalStateException()
+		Checkbox(
+			checked = a.value,
+			onCheckedChange = {
+				a.value = !a.value
+				buffer.checkBoxes?.set(rowIndex, a.value)
+			},
+			colors = CheckboxDefaults.colors(checkedColor = buttonsColor)
+		)
+	}
+}
+
+@Composable
+private fun readableOnlyBufferRow(
+	row: List<String>,
+	buffer: ReadOnlyBuffer,
+) {
+	Row {
+		row.forEachIndexed { index, string ->
+			TextField(
+				value = string,
+				label = { Text(buffer.headers[index]) },
+				onValueChange = {},
+				modifier = Modifier.width(120.dp),
+				readOnly = true,
+				singleLine = true,
+			)
+			Spacer(Modifier.width(5.dp))
+		}
+	}
+}
+
+@Composable
+private fun filters(buffer: Buffer) {
 	Row {
 		buffer.filters?.forEachIndexed { index, (content, state) ->
 			val text = remember { mutableStateOf(content) }
@@ -69,7 +104,7 @@ private fun filters(buffer: CsvBuffer) {
 			TextField(
 				onValueChange = {
 					text.value = it
-					buffer.filters?.set(index, CsvBuffer.FilterState(it, state))
+					buffer.filters?.set(index, FilterState(it, state))
 					updateBuffersHash()
 				},
 				value = text.value,
@@ -82,7 +117,7 @@ private fun filters(buffer: CsvBuffer) {
 			Button(
 				onClick = {
 					isFilterAvailable.value = !isFilterAvailable.value
-					buffer.filters?.set(index, CsvBuffer.FilterState(content, isFilterAvailable.value))
+					buffer.filters?.set(index, FilterState(content, isFilterAvailable.value))
 					updateBuffersHash()
 				},
 				content = { Text("Filter", fontSize = 7.sp) },
@@ -94,28 +129,31 @@ private fun filters(buffer: CsvBuffer) {
 			)
 			Spacer(Modifier.width(5.dp))
 		}
-		Column {
-			Button(
-				modifier = Modifier.height(25.dp),
-				onClick = {
-					buffer.deleteLines()
-					updateBuffersHash()
-				},
-				contentPadding = PaddingValues(0.dp),
-				colors = ButtonDefaults.buttonColors(buttonsColor)
-			) { Text(" Delete ", fontSize = 10.sp) }
+		if (buffer.isWritable) {
+			buffer as CsvBuffer
+			Column {
+				Button(
+					modifier = Modifier.height(25.dp),
+					onClick = {
+						buffer.deleteLines()
+						updateBuffersHash()
+					},
+					contentPadding = PaddingValues(0.dp),
+					colors = ButtonDefaults.buttonColors(buttonsColor)
+				) { Text(" Delete ", fontSize = 10.sp) }
 
-			Spacer(Modifier.height(5.dp))
+				Spacer(Modifier.height(5.dp))
 
-			Button(
-				modifier = Modifier.height(25.dp),
-				onClick = {
-					buffer.addEmptyLines()
-					updateBuffersHash()
-				},
-				contentPadding = PaddingValues(0.dp),
-				colors = ButtonDefaults.buttonColors(buttonsColor)
-			) { Text("Add line", fontSize = 10.sp) }
+				Button(
+					modifier = Modifier.height(25.dp),
+					onClick = {
+						buffer.addEmptyLines()
+						updateBuffersHash()
+					},
+					contentPadding = PaddingValues(0.dp),
+					colors = ButtonDefaults.buttonColors(buttonsColor)
+				) { Text("Add line", fontSize = 10.sp) }
+			}
 		}
 	}
 }

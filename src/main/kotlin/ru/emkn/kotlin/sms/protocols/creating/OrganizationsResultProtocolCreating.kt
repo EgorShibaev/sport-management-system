@@ -29,7 +29,9 @@ fun parseLine(line: List<String>, group: String, winnerTime: Time?): Participant
 			?: throw IllegalArgumentException("Wrong sport rank"),
 		organization = line[6],
 		group = group,
-		score = score
+		score = score,
+		resultTime = try { Time(line[7]) } catch (e: IllegalArgumentException) { null },
+		place = line[8].toInt()
 	)
 }
 
