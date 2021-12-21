@@ -20,49 +20,52 @@ fun table(buffer: Buffer) {
 	Box(
 		modifier = Modifier.fillMaxSize().horizontalScroll(state).padding(end = 12.dp, bottom = 12.dp)
 	) {
-		buffer.filteredContent()?.let {
-			Column {
-				filters(buffer)
-				LazyColumn(Modifier.padding(5.dp)) {
-					it.forEach { (rowIndex, row) ->
-						item {
-							if (buffer.isWritable) {
-								Row {
-									row.forEachIndexed { columnIndex, field ->
-										val text = remember { mutableStateOf(field) }
-										text.value = (buffer as CsvBuffer).content?.get(rowIndex)?.get(columnIndex) ?: ""
-										TextField(
-											onValueChange = {
-												buffer.amend(rowIndex, columnIndex, it)
-												text.value = it
-											},
-											value = text.value,
-											singleLine = true,
-											modifier = Modifier.width(120.dp),
-										)
-										Spacer(Modifier.width(5.dp))
-									}
-									val checkBoxState = remember { mutableStateOf(false) }
-									checkBoxState.value =
-										(buffer as CsvBuffer).checkBoxes?.get(rowIndex) ?: throw IllegalStateException()
-									Checkbox(
-										checked = checkBoxState.value,
-										onCheckedChange = {
-											checkBoxState.value = !checkBoxState.value
-											buffer.checkBoxes?.set(rowIndex, checkBoxState.value)
-										},
-										colors = CheckboxDefaults.colors(checkedColor = buttonsColor)
-									)
-								}
-							} else {
-								buffer as ReadOnlyBuffer
-								readableOnlyBufferRow(row, buffer)
-							}
+		Column {
+			filters(buffer)
+			LazyColumn(Modifier.padding(5.dp)) {
+				buffer.filteredContent().forEach { (rowIndex, row) ->
+					item {
+						if (buffer.isWritable) {
+							writableTable(row, buffer, rowIndex)
+						} else {
+							buffer as ReadOnlyBuffer
+							readableOnlyBufferRow(row, buffer)
 						}
 					}
 				}
 			}
 		}
+	}
+}
+
+@Composable
+private fun writableTable(row: List<String>, buffer: Buffer, rowIndex: Int) {
+	Row {
+		row.forEachIndexed { columnIndex, field ->
+			val text = remember { mutableStateOf(field) }
+			text.value = (buffer as CsvBuffer).content[rowIndex][columnIndex]
+			TextField(
+				onValueChange = {
+					buffer.amend(rowIndex, columnIndex, it)
+					text.value = it
+				},
+				value = text.value,
+				singleLine = true,
+				modifier = Modifier.width(120.dp),
+			)
+			Spacer(Modifier.width(5.dp))
+		}
+		val checkBoxState = remember { mutableStateOf(false) }
+		checkBoxState.value =
+			(buffer as CsvBuffer).checkBoxes[rowIndex]
+		Checkbox(
+			checked = checkBoxState.value,
+			onCheckedChange = {
+				checkBoxState.value = !checkBoxState.value
+				buffer.checkBoxes[rowIndex] = checkBoxState.value
+			},
+			colors = CheckboxDefaults.colors(checkedColor = buttonsColor)
+		)
 	}
 }
 
@@ -89,13 +92,13 @@ private fun readableOnlyBufferRow(
 @Composable
 private fun filters(buffer: Buffer) {
 	Row {
-		buffer.filters?.forEachIndexed { index, (content, state) ->
+		buffer.filters.forEachIndexed { index, (content, state) ->
 			val text = remember { mutableStateOf(content) }
 			text.value = content
 			TextField(
 				onValueChange = {
 					text.value = it
-					buffer.filters?.set(index, FilterState(it, state))
+					buffer.filters[index] = FilterState(it, state)
 					updateBuffersHash()
 				},
 				value = text.value,
@@ -108,7 +111,7 @@ private fun filters(buffer: Buffer) {
 			Button(
 				onClick = {
 					isFilterAvailable.value = !isFilterAvailable.value
-					buffer.filters?.set(index, FilterState(content, isFilterAvailable.value))
+					buffer.filters[index] = FilterState(content, isFilterAvailable.value)
 					updateBuffersHash()
 				},
 				content = { Text("Filter", fontSize = 7.sp) },

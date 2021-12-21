@@ -52,7 +52,10 @@ fun updatedBuffers() = Title.values().associateWith {
 	when (it) {
 		Title.COURSES, Title.SPLITS, Title.APPLIES ->
 			getFileNames(it).map { name -> CsvBuffer(name, it) }
-		Title.PARTICIPANTS -> listOf(ParticipantsBuffer.apply { files = getFileNames(it) })
+		Title.PARTICIPANTS -> listOf(ParticipantsBuffer.apply {
+			files = getFileNames(it)
+			import()
+		})
 		Title.RESULT -> ResultBuffer.getBuffers(getFileNames(it).first())
 		Title.ORG_RESULT -> OrgResultBuffer.getBuffers(getFileNames(it).first())
 		Title.START_PROTOCOLS -> StartProtocolBuffer.getBuffers(getFileNames(it))
@@ -115,7 +118,7 @@ fun tabContent(buffers: List<Buffer>) {
 								Title.START_PROTOCOLS -> Text((buffers[index] as StartProtocolBuffer).groupName)
 								Title.APPLIES ->
 									Text(
-										(buffers[index] as CsvBuffer).content?.get(0)?.get(0) ?: (index + 1).toString(),
+										(buffers[index] as CsvBuffer).content[0][0],
 										fontSize = 10.sp
 									)
 								Title.PARTICIPANTS -> Text("All participants")
