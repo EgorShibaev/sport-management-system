@@ -32,9 +32,9 @@ fun parseApplies(applicationsContent: List<String>): List<Participant> =
 	}.flatten()
 
 
-fun writeStartProtocol(inputFileNames: List<String>) {
+fun writeStartProtocol(inputFileNames: List<String>, tossStep: Int) {
 	val groups = getGroups(inputFileNames)
-	groups.forEach { it.defineTimeForParticipants() }
+	groups.forEach { it.defineTimeForParticipants(tossStep) }
 	val content = groups.map { it.generateStartProtocol() }
 	var currentFileNumber = 1
 	content.forEach {

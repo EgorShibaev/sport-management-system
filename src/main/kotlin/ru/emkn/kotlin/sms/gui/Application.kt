@@ -50,11 +50,12 @@ fun getFileNames(title: Title): List<String> {
 
 fun updatedBuffers() = Title.values().associateWith {
 	when (it) {
-		Title.COURSES, Title.SPLITS, Title.APPLIES, Title.START_PROTOCOLS ->
+		Title.COURSES, Title.SPLITS, Title.APPLIES ->
 			getFileNames(it).map { name -> CsvBuffer(name, it) }
 		Title.PARTICIPANTS -> listOf(ParticipantsBuffer.apply { files = getFileNames(it) })
 		Title.RESULT -> ResultBuffer.getBuffers(getFileNames(it).first())
 		Title.ORG_RESULT -> OrgResultBuffer.getBuffers(getFileNames(it).first())
+		Title.START_PROTOCOLS -> StartProtocolBuffer.getBuffers(getFileNames(it))
 	}
 }
 
@@ -107,10 +108,17 @@ fun tabContent(buffers: List<Buffer>) {
 						selected = index == indexOfFile.value,
 						onClick = { indexOfFile.value = index },
 						text = {
-							when {
-								buffers[index] is ResultBuffer -> Text((buffers[index] as ResultBuffer).groupName)
-								buffers[index] is OrgResultBuffer ->
+							when (buffers[index].title) {
+								Title.RESULT -> Text((buffers[index] as ResultBuffer).groupName)
+								Title.ORG_RESULT ->
 									Text((buffers[index] as OrgResultBuffer).organizationName, fontSize = 10.sp)
+								Title.START_PROTOCOLS -> Text((buffers[index] as StartProtocolBuffer).groupName)
+								Title.APPLIES ->
+									Text(
+										(buffers[index] as CsvBuffer).content?.get(0)?.get(0) ?: (index + 1).toString(),
+										fontSize = 10.sp
+									)
+								Title.PARTICIPANTS -> Text("All participants")
 								else -> Text((index + 1).toString())
 							}
 						},
@@ -224,6 +232,17 @@ private fun resultButton() {
 
 @Composable
 private fun createStartProtocolsButton() {
+	val tossStep = remember { mutableStateOf("1") }
+	TextField(
+		value = tossStep.value,
+		label = { Text("Tess step") },
+		onValueChange = {
+			tossStep.value = it
+		},
+		modifier = Modifier.width(100.dp)
+	)
+	Spacer(Modifier.width(5.dp))
+
 	val appliesDir = remember { mutableStateOf("sample-data/applications") }
 	TextField(
 		value = appliesDir.value,
@@ -233,12 +252,13 @@ private fun createStartProtocolsButton() {
 		}
 	)
 	Spacer(Modifier.width(5.dp))
+
 	Button(
 		onClick = {
 			Participant.numberForParticipant = 0
 			val applies = File(appliesDir.value).listFiles()?.map { it.absoluteFile.toString() }
 				?: throw IllegalArgumentException()
-			writeStartProtocol(applies)
+			writeStartProtocol(applies, tossStep.value.toIntOrNull() ?: 1)
 		},
 		content = {
 			Text("Create start protocol")

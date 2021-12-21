@@ -62,12 +62,11 @@ class Group(
 		}
 	}
 
-	fun defineTimeForParticipants() {
+	fun defineTimeForParticipants(tossStep: Int) {
 		var offset = 0
-		val step = 1
 		participants.shuffled(Random(1)).forEach {
 			it.startTime = it.startTime + (offset * 60)
-			offset += step
+			offset += tossStep
 		}
 		logger.info { "time is defined for each participant in group $name" }
 	}

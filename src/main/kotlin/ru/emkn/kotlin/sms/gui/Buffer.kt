@@ -5,6 +5,7 @@ import com.github.doyaaaaaken.kotlincsv.dsl.csvWriter
 import ru.emkn.kotlin.sms.Participant
 import ru.emkn.kotlin.sms.logger
 import ru.emkn.kotlin.sms.protocols.creating.getGroups
+import ru.emkn.kotlin.sms.protocols.creating.getParticipantsList
 import ru.emkn.kotlin.sms.protocols.creating.parseResultFile
 import java.io.File
 
@@ -157,7 +158,7 @@ object ParticipantsBuffer : ReadOnlyBuffer(Title.PARTICIPANTS) {
 	}
 }
 
-class ResultBuffer(val groupName: String, var fileName: String) : ReadOnlyBuffer(Title.RESULT) {
+class ResultBuffer(val groupName: String, private var fileName: String) : ReadOnlyBuffer(Title.RESULT) {
 	override val headers = listOf("Number", "First name", "Last name", "Year", "Rank", "Organization", "Time", "Place")
 
 	override fun import() {
@@ -187,7 +188,7 @@ class ResultBuffer(val groupName: String, var fileName: String) : ReadOnlyBuffer
 	}
 }
 
-class OrgResultBuffer(val organizationName: String, var fileName: String) : ReadOnlyBuffer(Title.ORG_RESULT) {
+class OrgResultBuffer(val organizationName: String, private var fileName: String) : ReadOnlyBuffer(Title.ORG_RESULT) {
 	override fun import() {
 		content = parseResultFile(fileName).filter { it.organization == organizationName }
 		filters = MutableList(headers.size) { FilterState("", false) }
@@ -213,5 +214,38 @@ class OrgResultBuffer(val organizationName: String, var fileName: String) : Read
 	companion object {
 		fun getBuffers(fileName: String) =
 			parseResultFile(fileName).map { it.organization }.toSet().map { OrgResultBuffer(it, fileName) }
+	}
+}
+
+class StartProtocolBuffer(var groupName: String, private var fileName: String) : ReadOnlyBuffer(Title.START_PROTOCOLS) {
+
+	override fun import() {
+		content = getParticipantsList(listOf(fileName))
+		groupName = content?.first()?.group.toString()
+		filters = MutableList(headers.size) { FilterState("", false) }
+	}
+
+	override val headers = listOf("Number", "First name", "Last name", "Year", "Rank", "Start Time", "Organization")
+
+	override fun content(): List<List<String>> {
+		return content?.map {
+			listOf(
+				it.number.toString(),
+				it.firstName,
+				it.lastName,
+				it.year.toString(),
+				it.rank.russianEquivalent,
+				it.startTime.toString(),
+				it.organization
+			)
+		} ?: emptyList()
+	}
+
+	companion object {
+		fun getBuffers(fileNames: List<String>) =
+			fileNames.map {
+				val participants = getParticipantsList(listOf(it))
+				StartProtocolBuffer(participants.first().group, it)
+			}
 	}
 }
