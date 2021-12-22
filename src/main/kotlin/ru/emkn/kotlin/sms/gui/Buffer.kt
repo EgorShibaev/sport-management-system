@@ -163,13 +163,37 @@ class AppliesBuffer(var organizationName: String, fileName: String) : WritableBu
 		)
 	}
 
+	inner class RankBuffer {
+		var value: String = ""
+
+		var lastIndex: Int = -1
+
+		private fun getRank(string: String) =
+			SportRank.values().find { it.russianEquivalent == string } ?: SportRank.NONE
+
+		fun amend(index: Int, newValue: String) {
+			logger.error { "$index $newValue $lastIndex $value" }
+			if (index != lastIndex && lastIndex != -1)
+				participants[lastIndex].rank = getRank(value)
+
+			lastIndex = index
+			value = newValue
+			val rank = getRank(newValue)
+
+			if (rank != SportRank.NONE)
+				participants[lastIndex].rank = rank
+		}
+	}
+
+	private val rankBuffer = RankBuffer()
+
 	override fun amend(row: Int, column: Int, newValue: String) {
 		when (column) {
 			0 -> participants[row].group = newValue
 			1 -> participants[row].firstName = newValue
 			2 -> participants[row].lastName = newValue
 			3 -> participants[row].year = newValue.toIntOrNull() ?: 0
-			4 -> participants[row].rank = SportRank.values().find { it.russianEquivalent == newValue } ?: SportRank.NONE
+			4 -> rankBuffer.amend(row, newValue)
 		}
 	}
 
@@ -190,13 +214,13 @@ class AppliesBuffer(var organizationName: String, fileName: String) : WritableBu
 	}
 
 	override fun content(): List<List<String>> {
-		return participants.map {
+		return participants.mapIndexed { index, value ->
 			listOf(
-				it.group,
-				it.firstName,
-				it.lastName,
-				it.year.toString(),
-				it.rank.russianEquivalent
+				value.group,
+				value.firstName,
+				value.lastName,
+				value.year.toString(),
+				if (index == rankBuffer.lastIndex) rankBuffer.value else value.rank.russianEquivalent
 			)
 		}
 	}
