@@ -13,7 +13,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import ru.emkn.kotlin.sms.Participant
 import ru.emkn.kotlin.sms.buttonsColor
 import ru.emkn.kotlin.sms.protocols.creating.*
 import java.io.File
@@ -187,6 +186,8 @@ private fun orgResultButton() {
 	Button(
 		onClick = {
 			createOrganizationsResultProtocol(parseResultFile(resultFile.value))
+			buffers.forEach { it.value.forEach { buffer -> buffer.import() } }
+			updateBuffersHash()
 		},
 		content = {
 			Text("Create organization result")
@@ -226,6 +227,8 @@ private fun resultButton() {
 				interactiveResultRead(getParticipantsList(protocolNames))
 
 			createResultProtocol(results)
+			buffers.forEach { it.value.forEach { buffer -> buffer.import() } }
+			updateBuffersHash()
 		},
 		content = {
 			Text("Create start protocol")
@@ -259,10 +262,11 @@ private fun createStartProtocolsButton() {
 
 	Button(
 		onClick = {
-			Participant.numberForParticipant = 0
 			val applies = File(appliesDir.value).listFiles()?.map { it.absoluteFile.toString() }
 				?: throw IllegalArgumentException()
 			writeStartProtocol(applies, tossStep.value.toIntOrNull() ?: 1)
+			buffers.forEach { it.value.forEach { buffer -> buffer.import() } }
+			updateBuffersHash()
 		},
 		content = {
 			Text("Create start protocol")

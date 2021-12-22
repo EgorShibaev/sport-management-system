@@ -8,9 +8,11 @@ import ru.emkn.kotlin.sms.SportRank
 import ru.emkn.kotlin.sms.logger
 import java.io.File
 
-fun getGroups(fileNames: List<String>) =
-	parseApplies(fileNames.map { File(it).readText() }).groupBy { it.group }
+fun getGroups(fileNames: List<String>): List<Group> {
+	Participant.numberForParticipant = 0
+	return parseApplies(fileNames.map { File(it).readText() }).groupBy { it.group }
 		.map { Group(it.value.toMutableList(), false) }
+}
 
 fun parseApplies(applicationsContent: List<String>): List<Participant> =
 	applicationsContent.map { content ->
