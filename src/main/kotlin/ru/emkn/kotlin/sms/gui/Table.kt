@@ -26,11 +26,12 @@ fun table(buffer: Buffer) {
 				buffer.filteredContent().forEach { (rowIndex, row) ->
 					item {
 						if (buffer.isWritable) {
-							writableTable(row, buffer, rowIndex)
+							writableTable(row, buffer as WritableBuffer, rowIndex)
 						} else {
 							buffer as ReadOnlyBuffer
 							readableOnlyBufferRow(row, buffer)
 						}
+						Spacer(Modifier.height(5.dp))
 					}
 				}
 			}
@@ -39,25 +40,30 @@ fun table(buffer: Buffer) {
 }
 
 @Composable
-private fun writableTable(row: List<String>, buffer: Buffer, rowIndex: Int) {
+private fun writableTable(row: List<String>, buffer: WritableBuffer, rowIndex: Int) {
 	Row {
 		row.forEachIndexed { columnIndex, field ->
 			val text = remember { mutableStateOf(field) }
-			text.value = (buffer as CsvBuffer).content[rowIndex][columnIndex]
+			text.value = buffer.content()[rowIndex][columnIndex]
 			TextField(
 				onValueChange = {
 					buffer.amend(rowIndex, columnIndex, it)
 					text.value = it
+					updateBuffersHash()
 				},
 				value = text.value,
 				singleLine = true,
 				modifier = Modifier.width(120.dp),
+				label = {
+					if (buffer is AppliesBuffer)
+						Text(buffer.headers[columnIndex])
+				}
 			)
 			Spacer(Modifier.width(5.dp))
 		}
 		val checkBoxState = remember { mutableStateOf(false) }
 		checkBoxState.value =
-			(buffer as CsvBuffer).checkBoxes[rowIndex]
+			buffer.checkBoxes[rowIndex]
 		Checkbox(
 			checked = checkBoxState.value,
 			onCheckedChange = {
@@ -124,7 +130,7 @@ private fun filters(buffer: Buffer) {
 			Spacer(Modifier.width(5.dp))
 		}
 		if (buffer.isWritable) {
-			buffer as CsvBuffer
+			buffer as WritableBuffer
 			Column {
 				Button(
 					modifier = Modifier.height(25.dp),

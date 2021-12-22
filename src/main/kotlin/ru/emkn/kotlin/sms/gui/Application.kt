@@ -50,7 +50,7 @@ fun getFileNames(title: Title): List<String> {
 
 fun updatedBuffers() = Title.values().associateWith {
 	when (it) {
-		Title.COURSES, Title.SPLITS, Title.APPLIES ->
+		Title.COURSES, Title.SPLITS ->
 			getFileNames(it).map { name -> CsvBuffer(name, it) }
 		Title.PARTICIPANTS -> listOf(ParticipantsBuffer.apply {
 			files = getFileNames(it)
@@ -59,6 +59,7 @@ fun updatedBuffers() = Title.values().associateWith {
 		Title.RESULT -> ResultBuffer.getBuffers(getFileNames(it).first())
 		Title.ORG_RESULT -> OrgResultBuffer.getBuffers(getFileNames(it).first())
 		Title.START_PROTOCOLS -> StartProtocolBuffer.getBuffers(getFileNames(it))
+		Title.APPLIES -> AppliesBuffer.getBuffers(getFileNames(it))
 	}
 }
 
@@ -118,7 +119,7 @@ fun tabContent(buffers: List<Buffer>) {
 								Title.START_PROTOCOLS -> Text((buffers[index] as StartProtocolBuffer).groupName)
 								Title.APPLIES ->
 									Text(
-										(buffers[index] as CsvBuffer).content[0][0],
+										(buffers[index] as AppliesBuffer).organizationName,
 										fontSize = 10.sp
 									)
 								Title.PARTICIPANTS -> Text("All participants")
@@ -142,7 +143,7 @@ private fun buttons(buffers: List<Buffer>) {
 			Spacer(Modifier.width(5.dp))
 			Button(
 				onClick = {
-					buffers.forEach { (it as CsvBuffer).save() }
+					buffers.forEach { (it as WritableBuffer).save() }
 					updateBuffersHash()
 				},
 				content = {

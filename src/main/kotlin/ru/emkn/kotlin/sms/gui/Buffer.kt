@@ -1,11 +1,14 @@
 package ru.emkn.kotlin.sms.gui
 
+import com.github.doyaaaaaken.kotlincsv.client.CsvWriter
 import com.github.doyaaaaaken.kotlincsv.dsl.csvReader
 import com.github.doyaaaaaken.kotlincsv.dsl.csvWriter
 import ru.emkn.kotlin.sms.Participant
+import ru.emkn.kotlin.sms.SportRank
 import ru.emkn.kotlin.sms.logger
 import ru.emkn.kotlin.sms.protocols.creating.getGroups
 import ru.emkn.kotlin.sms.protocols.creating.getParticipantsList
+import ru.emkn.kotlin.sms.protocols.creating.parseApplies
 import ru.emkn.kotlin.sms.protocols.creating.parseResultFile
 import java.io.File
 
@@ -54,14 +57,48 @@ abstract class Buffer(val title: Title, val isWritable: Boolean) {
 
 }
 
-class CsvBuffer(private val fileName: String, title: Title) : Buffer(title, true) {
-	var content: MutableList<MutableList<String>> = mutableListOf()
+abstract class WritableBuffer(val fileName: String, title: Title) : Buffer(title, true) {
+	var checkBoxes: MutableList<Boolean> = mutableListOf()
+
+	fun chosenIndices() = checkBoxes.withIndex().filter { it.value }.map { it.index }
+
+	abstract fun save()
+
+	abstract fun amend(row: Int, column: Int, newValue: String)
+
+	abstract fun deleteLines()
+
+	abstract fun addEmptyLines()
+
+	override fun hashCode(): Int {
+		var result = fileName.hashCode()
+		result = 31 * result + title.hashCode()
+		result = 31 * result + content().hashCode()
+		result = 31 * result + filters.hashCode()
+		return result
+	}
+
+	override fun equals(other: Any?): Boolean {
+		if (this === other) return true
+		if (javaClass != other?.javaClass) return false
+
+		other as WritableBuffer
+
+		if (fileName != other.fileName) return false
+		if (title != other.title) return false
+		if (content() != other.content()) return false
+		if (filters != other.filters) return false
+
+		return true
+	}
+}
+
+class CsvBuffer(fileName: String, title: Title) : WritableBuffer(fileName, title) {
+	private var content: MutableList<MutableList<String>> = mutableListOf()
 
 	override fun content(): List<List<String>> {
 		return content.map { row -> row.toList() }.toList()
 	}
-
-	var checkBoxes: MutableList<Boolean> = mutableListOf()
 
 	init {
 		import()
@@ -74,21 +111,21 @@ class CsvBuffer(private val fileName: String, title: Title) : Buffer(title, true
 		checkBoxes = MutableList(content.size) { false }
 	}
 
-	fun save() {
+	override fun save() {
 		csvWriter().writeAll(content, fileName)
 	}
 
-	fun amend(row: Int, column: Int, newValue: String) {
+	override fun amend(row: Int, column: Int, newValue: String) {
 		content[row][column] = newValue
 	}
 
-	fun deleteLines() {
-		val indices = checkBoxes.withIndex().filter { it.value }.map { it.index }
+	override fun deleteLines() {
+		val indices = chosenIndices()
 		checkBoxes.removeAll { it }
 		content = content.withIndex().filter { it.index !in indices }.map { it.value }.toMutableList()
 	}
 
-	fun addEmptyLines() {
+	override fun addEmptyLines() {
 		val emptyLine = MutableList(filters.size) { "" }
 		if (content.isEmpty()) {
 			content = mutableListOf(emptyLine)
@@ -100,27 +137,79 @@ class CsvBuffer(private val fileName: String, title: Title) : Buffer(title, true
 			checkBoxes.add(indexForAdd + indexOfIndex, false)
 		}
 	}
+}
 
-	override fun hashCode(): Int {
-		var result = fileName.hashCode()
-		result = 31 * result + title.hashCode()
-		result = 31 * result + content.hashCode()
-		result = 31 * result + filters.hashCode()
-		return result
+class AppliesBuffer(var organizationName: String, fileName: String) : WritableBuffer(fileName, Title.APPLIES) {
+
+	private var participants = mutableListOf<Participant>()
+
+	val headers = listOf("Group", "First name", "Last name", "Year", "Rank")
+
+	override fun import() {
+		participants = parseApplies(listOf(File(fileName).readText())).toMutableList()
+		organizationName = participants.first().organization
+		val size = headers.size
+		filters = MutableList(size) { FilterState("", false) }
+		checkBoxes = MutableList(participants.size) { false }
 	}
 
-	override fun equals(other: Any?): Boolean {
-		if (this === other) return true
-		if (javaClass != other?.javaClass) return false
+	override fun save() {
+		CsvWriter().writeAll(
+			listOf(
+				listOf(organizationName) + List(headers.size - 1) { "" },
+				listOf("Группа", "Фамилия", "Имя", "Г.р.", "Разр.")
+			) + content(),
+			fileName
+		)
+	}
 
-		other as CsvBuffer
+	override fun amend(row: Int, column: Int, newValue: String) {
+		when (column) {
+			0 -> participants[row].group = newValue
+			1 -> participants[row].firstName = newValue
+			2 -> participants[row].lastName = newValue
+			3 -> participants[row].year = newValue.toIntOrNull() ?: 0
+			4 -> participants[row].rank = SportRank.values().find { it.russianEquivalent == newValue } ?: SportRank.NONE
+		}
+	}
 
-		if (fileName != other.fileName) return false
-		if (title != other.title) return false
-		if (content != other.content) return false
-		if (filters != other.filters) return false
+	override fun addEmptyLines() {
+		val indices = checkBoxes.withIndex().filter { it.value }.map { it.index }
+		indices.forEachIndexed { indexForAdd, indexOfIndex ->
+			participants.add(
+				indexForAdd + indexOfIndex, Participant("", "", 0, SportRank.NONE, "", organizationName)
+			)
+			checkBoxes.add(indexForAdd + indexOfIndex, false)
+		}
+	}
 
-		return true
+	override fun deleteLines() {
+		val indices = chosenIndices()
+		checkBoxes.removeAll { it }
+		participants = participants.withIndex().filter { it.index !in indices }.map { it.value }.toMutableList()
+	}
+
+	override fun content(): List<List<String>> {
+		return participants.map {
+			listOf(
+				it.group,
+				it.firstName,
+				it.lastName,
+				it.year.toString(),
+				it.rank.russianEquivalent
+			)
+		}
+	}
+
+	companion object {
+		fun getBuffers(fileNames: List<String>) = fileNames.map {
+			val participants = parseApplies(listOf(File(it).readText())).toMutableList()
+			AppliesBuffer(participants.first().organization, it)
+		}
+	}
+
+	init {
+		import()
 	}
 }
 

@@ -1,11 +1,11 @@
 package ru.emkn.kotlin.sms
 
 data class Participant(
-	val firstName: String,
-	val lastName: String,
-	val year: Int,
-	val rank: SportRank,
-	val group: String,
+	var firstName: String,
+	var lastName: String,
+	var year: Int,
+	var rank: SportRank,
+	var group: String,
 	val organization: String,
 	var number: Int = numberForParticipant,
 	var startTime: Time = Time(12, 0),
