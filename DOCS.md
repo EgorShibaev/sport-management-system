@@ -1,7 +1,8 @@
-### Инструкции по использованию
+### Instructions for use
 
-В графическом интерфейсе присутствует 7 вкладок - 3 поддерживают изменения, 4 доступны только для чтения. 
-Чтобы обновить файлы для вкладки нужно изменить поле 'file location' и нажать на кнопку select location. 
-В каждой вкладке есть несколько подвкладок, каждая отображающая свою группу/организацию. 
-Содержимое изменяемых вкладок можно менять, и, после нажатия кнопки 'Save', изменения запишутся в файл.
-При изменении в файлах необходимо нажать на кнопку 'Import' для обновления содержимого страницы.
+There are 7 tabs in the GUI - 3 support changes, 4 are read only. 
+To update the files for a tab, you need to change the 'file location' field and click on the select location button. 
+Each tab has several sub-tabs, each displaying a different group/organization. 
+The contents of the tabs being changed can be changed and, after pressing the 'Save' button, the changes will be written to the file.
+When you change in the files, you need to press the 'Import' button to update the contents of the page.
+
